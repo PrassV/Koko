@@ -15,6 +15,8 @@ app = FastAPI(title="Property Management Portal")
 origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "https://koko-two-zeta.vercel.app",
+    "https://propo.vercel.app", # Future proofing
 ]
 
 app.add_middleware(
