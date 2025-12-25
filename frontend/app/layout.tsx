@@ -11,15 +11,18 @@ export const metadata: Metadata = {
   description: "Manage your properties with ease.",
 };
 
+import { AnimatedBackground } from "@/components/ui/animated-background";
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <body className={inter.className}>
         <AuthProvider>
+          <AnimatedBackground />
           {children}
           <Toaster />
         </AuthProvider>
