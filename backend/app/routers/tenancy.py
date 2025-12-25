@@ -120,3 +120,27 @@ async def get_owner_report(
     # Let's stick to basic "My Payments" endpoint in finance router and filter there.
     pass
 
+@router.get("/me")
+async def get_my_tenancy(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    if user.role != "TENANT":
+        raise HTTPException(status_code=403, detail="Not authorized")
+        
+    # Get active tenancy for this user
+    # Order by start_date desc to get most recent
+    result = await db.execute(
+        select(Tenancy)
+        .where(Tenancy.tenant_id == user.id)
+        .where(Tenancy.status.in_(["ACTIVE", "NOTICE"]))
+        .order_by(Tenancy.start_date.desc())
+    )
+    tenancy = result.scalars().first()
+    
+    if not tenancy:
+        # Return 204 or 404? 404 implies error, 204 or empty object implies no data.
+        # Let's return 404 for simplicity in frontend handling for "No lease found"
+        raise HTTPException(status_code=404, detail="No active lease found")
+        
+    return tenancy
