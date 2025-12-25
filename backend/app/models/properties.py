@@ -24,9 +24,9 @@ class Unit(Base):
     images = Column(JSON, nullable=True) # List of image URLs
     
     property = relationship("Property", back_populates="units")
-    tenancy = relationship("Tenancy", back_populates="unit", uselist=False) # Current active tenancy? Or history?
+    tenancy = relationship("Tenancy", back_populates="unit", uselist=False, overlaps="tenancies") # Current active tenancy
     # For history, we might want one-to-many. Let's do one-to-many for history ledger.
-    tenancies = relationship("Tenancy", back_populates="unit")
+    tenancies = relationship("Tenancy", back_populates="unit", overlaps="tenancy")
     maintenance_requests = relationship("MaintenanceRequest", back_populates="unit")
     payments = relationship("Payment", back_populates="unit")
     documents = Column(JSON, nullable=True) # List of {"name": "doc", "url": "..."}
