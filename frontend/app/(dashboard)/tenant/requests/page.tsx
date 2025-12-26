@@ -84,7 +84,7 @@ export default function RequestsPage() {
                 </div>
                 <Button
                     onClick={() => setShowForm(!showForm)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                    className="bg-amber-600 hover:bg-amber-700 text-black"
                 >
                     <Plus className="mr-2 h-4 w-4" /> New Request
                 </Button>
@@ -98,7 +98,7 @@ export default function RequestsPage() {
                         exit={{ opacity: 0, height: 0 }}
                         className="overflow-hidden"
                     >
-                        <GlassCard className="p-6 border-blue-500/30 bg-blue-500/5 mb-8">
+                        <GlassCard className="p-6 border-amber-500/30 bg-amber-500/5 mb-8">
                             <h3 className="text-lg font-semibold text-white mb-4">Describe the issue</h3>
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 <div className="space-y-2">
@@ -141,8 +141,8 @@ export default function RequestsPage() {
                     requests.map((req) => (
                         <GlassCard key={req.id} className="p-6 flex items-start gap-4 hover:bg-white/5 transition-colors">
                             <div className={`p-3 rounded-full mt-1 ${req.status === 'OPEN' ? 'bg-yellow-500/10 text-yellow-500' :
-                                    req.status === 'RESOLVED' ? 'bg-emerald-500/10 text-emerald-500' :
-                                        'bg-blue-500/10 text-blue-500'
+                                req.status === 'RESOLVED' ? 'bg-emerald-500/10 text-emerald-500' :
+                                    'bg-amber-500/10 text-amber-500'
                                 }`}>
                                 {req.status === 'OPEN' ? <Clock className="h-5 w-5" /> :
                                     req.status === 'RESOLVED' ? <CheckCircle className="h-5 w-5" /> :

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import api from "@/lib/api";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
-import { Plus, MapPin, Building } from "lucide-react";
+import { Plus, MapPin, Building, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
@@ -61,7 +61,7 @@ export default function PropertiesPage() {
                     <p className="text-slate-400">Manage your real estate portfolio.</p>
                 </div>
                 <Link href="/owner/properties/create">
-                    <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0">
+                    <Button className="bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-black border-0">
                         <Plus className="mr-2 h-4 w-4" /> Add Property
                     </Button>
                 </Link>
@@ -91,23 +91,33 @@ export default function PropertiesPage() {
                 >
                     {properties.map((prop) => (
                         <motion.div key={prop.id} variants={item}>
-                            <GlassCard className="h-full flex flex-col p-6 group cursor-pointer hover:border-blue-500/50 transition-colors">
-                                <div className="mb-4 p-3 bg-blue-500/10 rounded-xl w-fit group-hover:bg-blue-500/20 transition-colors">
-                                    <Building className="h-6 w-6 text-blue-400" />
-                                </div>
-                                <h3 className="text-xl font-semibold text-white mb-2">{prop.name}</h3>
-                                <div className="flex items-start text-slate-400 text-sm mb-4">
-                                    <MapPin className="h-4 w-4 mr-1 mt-0.5 shrink-0" />
-                                    <span>{prop.address}</span>
-                                </div>
-                                <p className="text-slate-500 text-sm line-clamp-2 mb-4 flex-1">
-                                    {prop.description || "No description provided."}
-                                </p>
-                                <div className="pt-4 border-t border-white/5 flex items-center justify-between text-sm">
-                                    <span className="text-slate-400">Units: --</span>
-                                    <span className="text-blue-400 font-medium group-hover:underline">View Details -&gt;</span>
-                                </div>
-                            </GlassCard>
+                            <Link href={`/owner/properties/${prop.id}`} className="block h-full">
+                                <GlassCard className="h-full flex flex-col p-6 group cursor-pointer hover:border-amber-500/50 transition-colors">
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div className="p-3 bg-amber-600/20 rounded-xl text-amber-400 group-hover:bg-amber-600 group-hover:text-black transition-colors">
+                                            <Building className="h-6 w-6" />
+                                        </div>
+                                        {/* Status Badge Placeholder */}
+                                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                            Active
+                                        </span>
+                                    </div>
+
+                                    <h3 className="text-xl font-bold text-white mb-2">{prop.name}</h3>
+
+                                    <div className="space-y-2 mb-6 flex-1">
+                                        <p className="text-slate-400 text-sm flex items-start">
+                                            <MapPin className="h-4 w-4 mr-2 text-slate-500 shrink-0 mt-0.5" />
+                                            <span className="line-clamp-2">{prop.address}</span>
+                                        </p>
+                                    </div>
+
+                                    <div className="pt-4 border-t border-white/5 flex items-center justify-between text-sm text-slate-400">
+                                        <span>Click to view details</span>
+                                        <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform text-white" />
+                                    </div>
+                                </GlassCard>
+                            </Link>
                         </motion.div>
                     ))}
                 </motion.div>

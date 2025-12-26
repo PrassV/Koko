@@ -51,7 +51,7 @@ export default function AdminUsersPage() {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
                     <Input
                         placeholder="Search by name or email..."
-                        className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-blue-500"
+                        className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-amber-500"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
@@ -88,10 +88,10 @@ export default function AdminUsersPage() {
                                     </td>
                                     <td className="p-4">
                                         <span className={`px-2 py-1 rounded-full text-xs font-medium border ${user.role === 'ADMIN'
-                                                ? 'bg-purple-500/20 text-purple-400 border-purple-500/20'
-                                                : user.role === 'OWNER'
-                                                    ? 'bg-blue-500/20 text-blue-400 border-blue-500/20'
-                                                    : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/20'
+                                            ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/20'
+                                            : user.role === 'OWNER'
+                                                ? 'bg-amber-500/20 text-amber-400 border-amber-500/20'
+                                                : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/20'
                                             }`}>
                                             {user.role}
                                         </span>

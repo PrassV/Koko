@@ -94,8 +94,8 @@ export default function FinancePage() {
                 <motion.div variants={item}>
                     <GlassCard className="p-6">
                         <div className="flex items-center space-x-4">
-                            <div className="p-3 bg-blue-500/20 rounded-full">
-                                <TrendingUp className="h-6 w-6 text-blue-400" />
+                            <div className="p-3 bg-amber-500/20 rounded-full">
+                                <TrendingUp className="h-6 w-6 text-amber-400" />
                             </div>
                             <div>
                                 <p className="text-slate-400 text-sm">Active Leases</p>
@@ -108,8 +108,8 @@ export default function FinancePage() {
                 <motion.div variants={item}>
                     <GlassCard className="p-6">
                         <div className="flex items-center space-x-4">
-                            <div className="p-3 bg-purple-500/20 rounded-full">
-                                <CreditCard className="h-6 w-6 text-purple-400" />
+                            <div className="p-3 bg-yellow-500/20 rounded-full">
+                                <CreditCard className="h-6 w-6 text-yellow-400" />
                             </div>
                             <div>
                                 <p className="text-slate-400 text-sm">Pending Payments</p>

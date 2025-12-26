@@ -35,7 +35,7 @@ export default function OwnerDashboard() {
                 className="flex flex-col space-y-2"
             >
                 <h1 className="text-4xl font-bold tracking-tight text-white">
-                    Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">{userName}</span>
+                    Welcome back, <span className="text-gradient">{userName}</span>
                 </h1>
                 <p className="text-slate-400 text-lg">Here's what's happening with your portfolio today.</p>
             </motion.div>

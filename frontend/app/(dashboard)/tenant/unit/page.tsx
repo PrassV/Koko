@@ -60,10 +60,10 @@ export default function MyUnitPage() {
             </motion.div>
 
             <div className="grid gap-6 md:grid-cols-2">
-                <GlassCard className="p-6 md:col-span-2 bg-gradient-to-r from-blue-900/20 to-purple-900/20">
+                <GlassCard className="p-6 md:col-span-2 bg-gradient-to-r from-amber-900/10 to-yellow-900/10">
                     <div className="flex items-center space-x-4 mb-6">
-                        <div className="p-3 bg-blue-500/20 rounded-full">
-                            <Home className="h-8 w-8 text-blue-400" />
+                        <div className="p-3 bg-amber-500/20 rounded-full">
+                            <Home className="h-8 w-8 text-amber-400" />
                         </div>
                         <div>
                             <h2 className="text-2xl font-bold text-white">Unit #{tenancy.unit_id}</h2>
@@ -92,7 +92,7 @@ export default function MyUnitPage() {
 
                 <GlassCard className="p-6">
                     <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-                        <Calendar className="h-4 w-4 mr-2 text-purple-400" /> Lease Term
+                        <Calendar className="h-4 w-4 mr-2 text-yellow-400" /> Lease Term
                     </h3>
                     <div className="space-y-4">
                         <div className="flex justify-between items-center">

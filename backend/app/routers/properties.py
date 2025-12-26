@@ -6,6 +6,7 @@ from app.dependencies import get_current_user
 from app.models import Property, Unit, User
 from pydantic import BaseModel
 from typing import List, Optional
+from datetime import date
 
 router = APIRouter(prefix="/properties", tags=["Properties"])
 
@@ -13,10 +14,17 @@ class PropertyCreate(BaseModel):
     name: str
     address: str
     description: Optional[str] = None
+    property_type: Optional[str] = None
+    units_count: Optional[int] = 1
+    location_lat: Optional[float] = None
+    location_lng: Optional[float] = None
 
 class UnitCreate(BaseModel):
     unit_number: str
     specifications: Optional[dict] = None # JSON
+    size_sqft: Optional[float] = None
+    facing: Optional[str] = None
+    construction_date: Optional[date] = None
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_property(
@@ -31,7 +39,11 @@ async def create_property(
         owner_id=user.id,
         name=prop_data.name,
         address=prop_data.address,
-        description=prop_data.description
+        description=prop_data.description,
+        property_type=prop_data.property_type,
+        units_count=prop_data.units_count,
+        location_lat=prop_data.location_lat,
+        location_lng=prop_data.location_lng
     )
     db.add(new_prop)
     await db.commit()
@@ -49,6 +61,31 @@ async def get_my_properties(
     else:
         result = await db.execute(select(Property).where(Property.owner_id == user.id))
     return result.scalars().all()
+
+@router.get("/{property_id}")
+async def get_property(
+    property_id: int,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    # Eager load units
+    from sqlalchemy.orm import selectinload
+    
+    query = (
+        select(Property)
+        .options(selectinload(Property.units))
+        .where(Property.id == property_id)
+    )
+    result = await db.execute(query)
+    prop = result.scalars().first()
+    
+    if not prop:
+        raise HTTPException(status_code=404, detail="Property not found")
+        
+    if prop.owner_id != user.id and user.role != "ADMIN":
+        raise HTTPException(status_code=403, detail="Not authorized")
+        
+    return prop
 
 @router.patch("/{property_id}/documents")
 async def update_property_documents(
@@ -90,7 +127,10 @@ async def create_unit(
     new_unit = Unit(
         property_id=property_id,
         unit_number=unit_data.unit_number,
-        specifications=unit_data.specifications
+        specifications=unit_data.specifications,
+        size_sqft=unit_data.size_sqft,
+        facing=unit_data.facing,
+        construction_date=unit_data.construction_date
     )
     db.add(new_unit)
     await db.commit()

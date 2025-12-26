@@ -42,13 +42,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
             {/* Glass Sidebar */}
             <aside className="w-64 glass-panel m-4 rounded-2xl flex flex-col z-10 h-[calc(100vh-2rem)] sticky top-4">
-                <div className="p-6">
-                    <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">
-                        Propo
-                    </h1>
-                    <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-[0.2em] font-medium">
-                        {profile?.role} Portfolio
-                    </p>
+                <div className="p-6 flex items-center gap-3">
+                    <img src="/logo.png" alt="Koko Logo" className="h-10 w-10 object-contain" />
+                    <div>
+                        <h1 className="text-2xl font-bold text-gradient">
+                            Koko
+                        </h1>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-medium">
+                            {profile?.role}
+                        </p>
+                    </div>
                 </div>
 
                 <nav className="flex-1 px-4 space-y-2">
@@ -103,8 +106,40 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 p-8 overflow-y-auto z-10 relative">
-                {children}
+            {/* Main Content Area */}
+            <main className="flex-1 flex flex-col min-h-screen overflow-hidden z-10 relative">
+
+                {/* Header */}
+                <header className="h-16 border-b border-white/5 bg-white/5 backdrop-blur-md px-8 flex items-center justify-between sticky top-0 z-20">
+                    <div className="flex items-center gap-4">
+                        <h2 className="text-xl font-semibold text-white capitalize">
+                            {pathname.split('/').pop()?.replace('-', ' ') || 'Dashboard'}
+                        </h2>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white">
+                            <Settings className="h-5 w-5" />
+                        </Button>
+                        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold border border-white/10 ring-2 ring-white/5">
+                            {profile?.name?.charAt(0) || "U"}
+                        </div>
+                    </div>
+                </header>
+
+                {/* Page Content */}
+                <div className="flex-1 overflow-y-auto p-8 relative scroll-smooth">
+                    {children}
+                </div>
+
+                {/* Footer */}
+                <footer className="h-12 border-t border-white/5 bg-black/20 px-8 flex items-center justify-between text-xs text-slate-500">
+                    <p>© 2025 Propo Inc. All rights reserved.</p>
+                    <div className="flex gap-4">
+                        <span className="hover:text-white cursor-pointer">Privacy</span>
+                        <span className="hover:text-white cursor-pointer">Terms</span>
+                        <span className="hover:text-white cursor-pointer">Support</span>
+                    </div>
+                </footer>
             </main>
         </div>
     );
