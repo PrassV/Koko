@@ -1,9 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import api from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { upload } from '@vercel/blob/client';
-import usePlacesAutocomplete, { getGeocode, getLatLng } from "use-places-autocomplete";
+import { getGeocode, getLatLng } from "use-places-autocomplete";
 import { GoogleMap, useLoadScript, Marker, Libraries } from "@react-google-maps/api";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
@@ -34,51 +34,53 @@ export default function CreatePropertyPage() {
     // Form State
     const [formData, setFormData] = useState({
         name: "",
-        address: "",
         description: "",
-        property_type: "", // Apartment, House, etc.
+        property_type: "",
         units_count: 1,
         location_lat: 0,
         location_lng: 0,
         size_sqft: "",
         facing: "",
         construction_date: "",
-        specifications: {}
+        specifications: {},
+        // Address specific fields
+        address_line1: "",
+        city: "",
+        state: "",
+        pincode: ""
     });
 
     // Map State
-    const [mapCenter, setMapCenter] = useState({ lat: 40.7128, lng: -74.0060 }); // Default NYC
+    const [mapCenter, setMapCenter] = useState({ lat: 13.0827, lng: 80.2707 }); // Default Chennai (Tamil Nadu)
     const [mapZoom, setMapZoom] = useState(12);
 
-    // Address Autocomplete Hook
-    const {
-        ready,
-        value,
-        setValue,
-        suggestions: { status, data },
-        clearSuggestions,
-    } = usePlacesAutocomplete({
-        requestOptions: {
-            /* Define search scope here if needed */
-        },
-        debounce: 300,
-    });
+    // Debounced Geocoding Effect
+    useEffect(() => {
+        const timer = setTimeout(async () => {
+            const fullAddress = `${formData.address_line1}, ${formData.city}, ${formData.state}, ${formData.pincode}`;
+            if (formData.address_line1 && formData.city) {
+                try {
+                    const results = await getGeocode({ address: fullAddress });
+                    if (results && results[0]) {
+                        const { lat, lng } = await getLatLng(results[0]);
+                        setMapCenter({ lat, lng });
+                        setMapZoom(16);
+                        setFormData(prev => ({
+                            ...prev,
+                            location_lat: lat,
+                            location_lng: lng
+                        }));
+                    }
+                } catch (error) {
+                    // Silent fail if address not found yet
+                    console.log("Geocoding mismatch", error);
+                }
+            }
+        }, 1500); // Wait 1.5s after typing stops
 
-    const handleSelectAddress = async (address: string) => {
-        setValue(address, false);
-        clearSuggestions();
-        setFormData(prev => ({ ...prev, address }));
+        return () => clearTimeout(timer);
+    }, [formData.address_line1, formData.city, formData.state, formData.pincode]);
 
-        try {
-            const results = await getGeocode({ address });
-            const { lat, lng } = await getLatLng(results[0]);
-            setMapCenter({ lat, lng });
-            setMapZoom(16);
-            setFormData(prev => ({ ...prev, address, location_lat: lat, location_lng: lng }));
-        } catch (error) {
-            console.error("Error: ", error);
-        }
-    };
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files || e.target.files.length === 0) return;
@@ -107,6 +109,8 @@ export default function CreatePropertyPage() {
             // Transform types if needed
             const payload = {
                 ...formData,
+                // Construct the full address string for the backend
+                address: `${formData.address_line1}, ${formData.city}, ${formData.state}, ${formData.pincode}`,
                 units_count: Number(formData.units_count),
                 size_sqft: Number(formData.size_sqft),
                 specifications: {
@@ -172,32 +176,45 @@ export default function CreatePropertyPage() {
                                         />
                                     </div>
 
-                                    <div className="space-y-2 relative">
-                                        <Label className="text-slate-200">Address Search</Label>
-                                        <div className="relative">
-                                            <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
+                                    <div className="space-y-4">
+                                        <div className="space-y-2">
+                                            <Label className="text-slate-200">Address Line 1</Label>
                                             <Input
-                                                value={value}
-                                                onChange={(e) => setValue(e.target.value)}
-                                                disabled={!ready}
-                                                placeholder="Search street address..."
-                                                className="pl-10 glass-input"
+                                                placeholder="Door No, Street Name"
+                                                className="glass-input"
+                                                value={formData.address_line1}
+                                                onChange={(e) => setFormData({ ...formData, address_line1: e.target.value })}
                                             />
                                         </div>
-                                        {/* Autocomplete Suggestions */}
-                                        {status === "OK" && (
-                                            <ul className="absolute z-50 w-full mt-1 bg-slate-900 border border-white/10 rounded-md shadow-xl max-h-60 overflow-auto">
-                                                {data.map(({ place_id, description }) => (
-                                                    <li
-                                                        key={place_id}
-                                                        onClick={() => handleSelectAddress(description)}
-                                                        className="px-4 py-2 hover:bg-white/10 cursor-pointer text-sm text-slate-300 transition-colors"
-                                                    >
-                                                        {description}
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        )}
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <Label className="text-slate-200">City</Label>
+                                                <Input
+                                                    placeholder="City"
+                                                    className="glass-input"
+                                                    value={formData.city}
+                                                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label className="text-slate-200">State</Label>
+                                                <Input
+                                                    placeholder="State"
+                                                    className="glass-input"
+                                                    value={formData.state}
+                                                    onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-slate-200">Pincode</Label>
+                                            <Input
+                                                placeholder="600001"
+                                                className="glass-input"
+                                                value={formData.pincode}
+                                                onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
+                                            />
+                                        </div>
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-4">
@@ -236,7 +253,7 @@ export default function CreatePropertyPage() {
                                     <Button
                                         className="w-full bg-amber-600 hover:bg-amber-700 text-black"
                                         onClick={() => setStep(2)}
-                                        disabled={!formData.address || !formData.name}
+                                        disabled={!formData.address_line1 || !formData.city || !formData.name}
                                     >
                                         Next Step <ArrowRight className="ml-2 h-4 w-4" />
                                     </Button>
