@@ -3,6 +3,8 @@
 import { GlassCard } from "@/components/ui/glass-card";
 import { Counter } from "@/components/ui/counter";
 import { useAuth } from "@/context/AuthContext";
+import api from "@/lib/api";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Building2, Users, DollarSign, ArrowUpRight } from "lucide-react";
 
@@ -24,6 +26,29 @@ const item = {
 export default function OwnerDashboard() {
     const { profile } = useAuth();
     const userName = profile?.name || "Owner";
+
+    // Stats State
+    const [stats, setStats] = useState({
+        total_properties: 0,
+        active_tenants: 0,
+        monthly_revenue: 0,
+        occupancy_rate: 0
+    });
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const res = await api.get("/owner/stats");
+                setStats(res.data);
+            } catch (e) {
+                console.error("Failed to fetch dashboard stats", e);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchStats();
+    }, []);
 
     return (
         <div className="space-y-8 p-1">
@@ -55,10 +80,7 @@ export default function OwnerDashboard() {
                         <div className="flex flex-col space-y-2 relative z-10">
                             <span className="text-slate-400 font-medium">Total Properties</span>
                             <div className="text-4xl font-bold text-white flex items-baseline">
-                                <Counter value={5} />
-                                <span className="text-sm font-normal text-emerald-400 ml-2 flex items-center">
-                                    <ArrowUpRight size={16} className="mr-1" /> +2
-                                </span>
+                                <Counter value={stats.total_properties} />
                             </div>
                         </div>
                     </GlassCard>
@@ -72,9 +94,9 @@ export default function OwnerDashboard() {
                         <div className="flex flex-col space-y-2 relative z-10">
                             <span className="text-slate-400 font-medium">Active Tenants</span>
                             <div className="text-4xl font-bold text-white flex items-baseline">
-                                <Counter value={12} />
-                                <span className="text-sm font-normal text-slate-500 ml-2">
-                                    92% Occupancy
+                                <Counter value={stats.active_tenants} />
+                                <span className="text-sm font-normal text-emerald-400 ml-2">
+                                    {stats.occupancy_rate}% Occupancy
                                 </span>
                             </div>
                         </div>
@@ -87,9 +109,9 @@ export default function OwnerDashboard() {
                             <DollarSign size={100} />
                         </div>
                         <div className="flex flex-col space-y-2 relative z-10">
-                            <span className="text-slate-400 font-medium">Monthly Revenue</span>
+                            <span className="text-slate-400 font-medium">Month Revenue</span>
                             <div className="text-4xl font-bold text-white flex items-baseline">
-                                $<Counter value={12450} />
+                                $<Counter value={stats.monthly_revenue} />
                             </div>
                         </div>
                     </GlassCard>

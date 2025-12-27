@@ -6,7 +6,7 @@ import json
 import os
 from app.config import settings
 
-from app.routers import auth, properties, tenancy, maintenance, finance, storage, admin
+from app.routers import auth, properties, tenancy, maintenance, finance, storage, admin, owner
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -43,6 +43,7 @@ app.include_router(maintenance.router)
 app.include_router(finance.router)
 app.include_router(storage.router)
 app.include_router(admin.router)
+app.include_router(owner.router)
 
 @app.get("/")
 def read_root():

@@ -2,7 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.database import get_db
-from app.dependencies import get_current_user
+from app.database import get_db
+from app.dependencies import get_current_user, require_role
 from app.models import Tenancy, Unit, User
 from pydantic import BaseModel
 from datetime import date
@@ -21,13 +22,17 @@ class TenancyCreate(BaseModel):
     advance_amount: Optional[float] = 0
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
+
+# ...
+
+@router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_tenancy(
     data: TenancyCreate,
-    user: User = Depends(get_current_user),
+    background_tasks: BackgroundTasks,
+    user: User = Depends(require_role("OWNER")),
     db: AsyncSession = Depends(get_db)
 ):
-    if user.role != "OWNER" and user.role != "ADMIN":
-        raise HTTPException(status_code=403, detail="Only Owners can create tenancies")
         
     # Check unit ownership
     unit_res = await db.execute(select(Unit).where(Unit.id == data.unit_id))
@@ -67,22 +72,16 @@ async def create_tenancy(
     await db.commit()
     await db.refresh(new_tenancy)
     
-    # Send Invite Email
+    # Send Invite Email in Background
     if data.tenant_email:
-        # Assuming we can get property name via unit -> property join, but unit object has property_id.
-        # Let's simple query property name or just generic message.
-        # Actually unit object is in session already? No, we executed select.
-        # Let's just pass generic "Your Unit" or query fresh.
-        # For speed:
-        try:
-             # Fetch property name if needed, or just say "Your Unit"
-             from app.utils.email import send_invite_email
-             # We need to re-fetch unit with property or just assume
-             # unit.property relationship? Lazy load might fail in async without options.
-             # Simple fix:
-             await send_invite_email(data.tenant_email, data.tenant_name or "Tenant", "Koko Property", unit.unit_number)
-        except Exception as e:
-            print(f"Background email send failed: {e}")
+        from app.utils.email import send_invite_email
+        background_tasks.add_task(
+            send_invite_email, 
+            data.tenant_email, 
+            data.tenant_name or "Tenant", 
+            "Koko Property", 
+            unit.unit_number
+        )
 
     return new_tenancy
 

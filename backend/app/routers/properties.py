@@ -2,7 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.database import get_db
-from app.dependencies import get_current_user
+from app.database import get_db
+from app.dependencies import get_current_user, require_role
 from app.models import Property, Unit, User
 from pydantic import BaseModel
 from typing import List, Optional
@@ -36,11 +37,9 @@ class UnitCreate(BaseModel):
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_property(
     prop_data: PropertyCreate,
-    user: User = Depends(get_current_user),
+    user: User = Depends(require_role("OWNER")),
     db: AsyncSession = Depends(get_db)
 ):
-    if user.role != "OWNER" and user.role != "ADMIN":
-        raise HTTPException(status_code=403, detail="Only Owners can create properties")
     
     new_prop = Property(
         owner_id=user.id,
@@ -157,13 +156,15 @@ async def get_property_analytics(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    # Imports inside function to avoid circular deps if any, or just for cleanliness
-    from sqlalchemy import func, and_, desc, extract
+    from sqlalchemy import func, and_, desc, extract, case, literal_column
     from datetime import datetime, timedelta
     from app.models import Tenancy, Payment, MaintenanceRequest, Unit
     from app.schemas_analytics import PropertyAnalytics, OccupancyStats, FinancialStats, MonthlyRevenue, AlertItem
 
     # 1. Verify Ownership
+    # Using explicit check here as it's specific to property_id logic, 
+    # but could be abstracted if we load property in dependency.
+    # For now, keep it efficient:
     result = await db.execute(select(Property).where(Property.id == property_id))
     prop = result.scalars().first()
     if not prop:
@@ -171,102 +172,117 @@ async def get_property_analytics(
     if prop.owner_id != user.id and user.role != "ADMIN":
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    # 2. Occupancy Stats
-    units_result = await db.execute(select(Unit).where(Unit.property_id == property_id))
-    units = units_result.scalars().all()
+    # 2. Occupancy Stats (Aggregated)
+    # Count units by status
+    # SELECT count(id) FILTER (WHERE status='OCCUPIED'), ...
+    occupancy_query = (
+        select(
+            func.count(Unit.id).label("total"),
+            func.sum(case((Unit.status == "OCCUPIED", 1), else_=0)).label("occupied"),
+            func.sum(case((Unit.status == "VACANT", 1), else_=0)).label("vacant"),
+            func.sum(case((Unit.status == "UNDER_MAINTENANCE", 1), else_=0)).label("maintenance")
+        )
+        .where(Unit.property_id == property_id)
+    )
+    occ_res = (await db.execute(occupancy_query)).first()
     
-    total_units = len(units)
-    occupied = sum(1 for u in units if u.status == "OCCUPIED")
-    vacant = sum(1 for u in units if u.status == "VACANT")
-    maintenance = sum(1 for u in units if u.status == "UNDER_MAINTENANCE")
-
     occupancy_stats = OccupancyStats(
-        total_units=total_units,
-        occupied=occupied,
-        vacant=vacant,
-        under_maintenance=maintenance
+        total_units=occ_res.total or 0,
+        occupied=occ_res.occupied or 0,
+        vacant=occ_res.vacant or 0,
+        under_maintenance=occ_res.maintenance or 0
     )
 
     # 3. Financials
-    # Get all unit IDs for this property
-    unit_ids = [u.id for u in units]
-    
-    # Active Tenancies for Projected Rent
-    active_tenancies_result = await db.execute(
-        select(Tenancy).where(
-            and_(Tenancy.unit_id.in_(unit_ids), Tenancy.status == "ACTIVE")
+    # Get Unit IDs subquery for filtering
+    unit_ids_sub = select(Unit.id).where(Unit.property_id == property_id)
+
+    # Projected Rent (Sum of rent from ACTIVE tenancies in these units)
+    proj_rent_query = (
+        select(func.sum(Tenancy.rent_amount))
+        .where(
+            and_(
+                Tenancy.unit_id.in_(unit_ids_sub),
+                Tenancy.status == "ACTIVE"
+            )
         )
     )
-    active_tenancies = active_tenancies_result.scalars().all()
-    projected_rent = sum(t.rent_amount for t in active_tenancies)
+    projected_rent = (await db.execute(proj_rent_query)).scalar() or 0.0
 
     # 6 Month Window
     today = date.today()
     six_months_ago = today - timedelta(days=180)
 
-    # Revenue (Payments with type RENT linked to these units/tenancies)
-    # Note: Payments might be linked to Tenancy OR Unit.
-    # We'll search by Unit ID (via Tenancy or direct Unit link if we supported that, but schema says Tenancy has unit_id)
-    # Join Payment -> Tenancy -> Unit
-    # Revenue (Payments with type RENT linked to these units/tenancies)
-    # Join Payment -> Tenancy -> Unit
+    # Revenue Breakdown (Group by Month)
+    # We join Tenancy (to filter by unit) -> Payment
     revenue_query = (
-        select(Payment)
+        select(
+            extract('year', Payment.payment_date).label('year'),
+            extract('month', Payment.payment_date).label('month'),
+            func.sum(Payment.amount).label('total')
+        )
         .join(Tenancy, Payment.tenancy_id == Tenancy.id)
         .where(
             and_(
-                Tenancy.unit_id.in_(unit_ids),
+                Tenancy.unit_id.in_(unit_ids_sub),
                 Payment.payment_type == "RENT",
                 Payment.payment_date >= six_months_ago
             )
         )
+        .group_by(
+            extract('year', Payment.payment_date),
+            extract('month', Payment.payment_date)
+        )
+        .order_by(
+            extract('year', Payment.payment_date),
+            extract('month', Payment.payment_date)
+        )
     )
-    revenue_result = await db.execute(revenue_query)
-    payments = revenue_result.scalars().all()
+    rev_rows = (await db.execute(revenue_query)).all()
     
-    # Process Monthly Revenue in Python (SQLite doesn't support date_trunc easily)
-    monthly_map = {}
+    # Fill missing months
+    first_day_current = today.replace(day=1)
+    monthly_map = {(int(r.year), int(r.month)): r.total for r in rev_rows}
+    monthly_revenue = []
     total_revenue_6m = 0.0
     
-    for pay in payments:
-        m_key = (pay.payment_date.year, pay.payment_date.month)
-        monthly_map[m_key] = monthly_map.get(m_key, 0.0) + pay.amount
-        total_revenue_6m += pay.amount
-
-    monthly_revenue = []
-    # Ensure all 6 months are present even if 0
     for i in range(5, -1, -1):
-        d = today - timedelta(days=30*i)
-        key = (d.year, d.month)
-        amount = monthly_map.get(key, 0.0)
+        # Go back i months
+        # Logic: find date 30*i days ago roughly or strict month subtraction
+        # Strict month subtraction:
+        curr_m = first_day_current.month - i
+        curr_y = first_day_current.year
+        while curr_m <= 0:
+            curr_m += 12
+            curr_y -= 1
+            
+        amount = monthly_map.get((curr_y, curr_m), 0.0)
+        total_revenue_6m += amount
+        # Get Month Name
+        m_name = date(curr_y, curr_m, 1).strftime("%b")
         monthly_revenue.append(MonthlyRevenue(
-            month=d.strftime("%b"),
-            year=d.year,
+            month=m_name,
+            year=curr_y,
             amount=amount
         ))
 
-    # Maintenance Spend query
-    # Payment -> Unit directly (if definition allows) or Pay -> MaintenanceRequest -> Unit
-    # Current finance.py schema: Payment -> Tenancy. 
-    # Wait, finance.py: unit_id is nullable. If it's maintenance, it might be linked to Unit directly? 
-    # Let's assume for now maintenance payments are linked via unit_id directly or tenancy.
-    # Updated: finance.py showed `unit_id` column.
+    # Maintenance Spend
     expense_query = (
         select(func.sum(Payment.amount))
+        .join(Tenancy, Payment.tenancy_id == Tenancy.id)
         .where(
             and_(
-                Payment.unit_id.in_(unit_ids),
-                Payment.payment_type != "RENT", # Assuming everything else is expense/mixed
+                Tenancy.unit_id.in_(unit_ids_sub),
+                Payment.payment_type != "RENT",
                 Payment.payment_date >= six_months_ago
             )
         )
     )
-    expense_result = await db.execute(expense_query)
-    maintenance_spend = expense_result.scalar() or 0.0
+    maintenance_spend = (await db.execute(expense_query)).scalar() or 0.0
 
     financial_stats = FinancialStats(
         current_month_projected_rent=projected_rent,
-        pending_rent=0.0, # Placeholder: Requires complex logic checking 'due date' vs 'paid'
+        pending_rent=0.0, # Still placeholder
         total_revenue_6_months=total_revenue_6m,
         monthly_breakdown=monthly_revenue,
         maintenance_spend_6_months=maintenance_spend
@@ -275,45 +291,41 @@ async def get_property_analytics(
     # 4. Alerts
     alerts = []
     
-    # Expiring Leases (Next 90 days)
+    # Expiring Leases (SQL Check)
     expiry_threshold = today + timedelta(days=90)
-    expiring_query = select(Tenancy).where(
-        and_(
-            Tenancy.unit_id.in_(unit_ids),
-            Tenancy.status == "ACTIVE",
-            Tenancy.end_date <= expiry_threshold,
-            Tenancy.end_date >= today
+    expiring_query = (
+        select(Tenancy, Unit.unit_number)
+        .join(Unit, Tenancy.unit_id == Unit.id)
+        .where(
+            and_(
+                Tenancy.unit_id.in_(unit_ids_sub),
+                Tenancy.status == "ACTIVE",
+                Tenancy.end_date <= expiry_threshold,
+                Tenancy.end_date >= today
+            )
         )
     )
-    expiring_leases = (await db.execute(expiring_query)).scalars().all()
+    expiring_rows = (await db.execute(expiring_query)).all()
+    # Row is (Tenancy, unit_number) tuple
     
-    for tenancy in expiring_leases:
-        days_left = (tenancy.end_date - today).days
-        # Find unit number
-        unit = next((u for u in units if u.id == tenancy.unit_id), None)
-        unit_num = unit.unit_number if unit else "Unknown"
-        
+    for ten, u_num in expiring_rows:
+        days_left = (ten.end_date - today).days
         alerts.append(AlertItem(
             type="EXPIRING_LEASE",
             message=f"Lease ends in {days_left} days",
             severity="HIGH" if days_left < 30 else "MEDIUM",
-            unit_number=unit_num,
-            target_date=tenancy.end_date
+            unit_number=u_num,
+            target_date=ten.end_date
         ))
 
-    # Vacant Units
-    if vacant > 0:
+    # Vacant Units (Already have count from step 2)
+    if occupancy_stats.vacant > 0:
         alerts.append(AlertItem(
             type="VACANT_UNIT",
-            message=f"{vacant} units are currently vacant",
+            message=f"{occupancy_stats.vacant} units are currently vacant",
             severity="HIGH"
         ))
 
-    return PropertyAnalytics(
-        occupancy=occupancy_stats,
-        financials=financial_stats,
-        alerts=alerts
-    )
     return PropertyAnalytics(
         occupancy=occupancy_stats,
         financials=financial_stats,
