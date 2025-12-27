@@ -26,6 +26,9 @@ export default function CreateUnitPage() {
         tenant_name: "",
         tenant_email: "",
         tenant_phone: "",
+        // Payment Structure
+        payment_structure: "RENT" as "LEASE" | "RENT",
+        lease_amount: "",
         rent_amount: "",
         advance_amount: "",
         start_date: "",
@@ -55,7 +58,8 @@ export default function CreateUnitPage() {
 
             // 2. If Occupied, Create Tenancy
             if (formData.status === "OCCUPIED") {
-                if (!formData.start_date || !formData.rent_amount) {
+                const hasAmount = formData.payment_structure === "LEASE" ? formData.lease_amount : formData.rent_amount;
+                if (!formData.start_date || !hasAmount) {
                     toast.warning("Unit created, but Tenant details incomplete. Please add tenancy manually.");
                 } else {
                     const tenancyPayload = {
@@ -63,7 +67,9 @@ export default function CreateUnitPage() {
                         tenant_name: formData.tenant_name,
                         tenant_email: formData.tenant_email,
                         tenant_phone: formData.tenant_phone,
-                        rent_amount: Number(formData.rent_amount),
+                        payment_structure: formData.payment_structure,
+                        lease_amount: formData.payment_structure === "LEASE" ? Number(formData.lease_amount) : null,
+                        rent_amount: formData.payment_structure === "RENT" ? Number(formData.rent_amount) : null,
                         advance_amount: Number(formData.advance_amount) || 0,
                         start_date: formData.start_date,
                         end_date: formData.end_date || null
@@ -177,15 +183,61 @@ export default function CreateUnitPage() {
                                     />
                                     <p className="text-xs text-slate-500">If registered, this will link their account.</p>
                                 </div>
-                                <div className="space-y-2">
-                                    <Label className="text-slate-200">Rent Amount *</Label>
-                                    <Input
-                                        type="number"
-                                        className="glass-input"
-                                        value={formData.rent_amount}
-                                        onChange={(e) => setFormData({ ...formData, rent_amount: e.target.value })}
-                                    />
+
+                                {/* Payment Structure Toggle */}
+                                <div className="space-y-2 md:col-span-2">
+                                    <Label className="text-slate-200">Payment Type *</Label>
+                                    <div className="flex gap-4">
+                                        <button
+                                            type="button"
+                                            className={`flex-1 p-4 rounded-lg border transition-all ${formData.payment_structure === "RENT"
+                                                    ? "border-amber-500 bg-amber-500/10 text-amber-400"
+                                                    : "border-white/10 bg-black/20 text-slate-400 hover:border-white/20"
+                                                }`}
+                                            onClick={() => setFormData({ ...formData, payment_structure: "RENT", lease_amount: "" })}
+                                        >
+                                            <div className="font-semibold">Monthly Rent</div>
+                                            <div className="text-xs opacity-70">Periodic payments</div>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className={`flex-1 p-4 rounded-lg border transition-all ${formData.payment_structure === "LEASE"
+                                                    ? "border-emerald-500 bg-emerald-500/10 text-emerald-400"
+                                                    : "border-white/10 bg-black/20 text-slate-400 hover:border-white/20"
+                                                }`}
+                                            onClick={() => setFormData({ ...formData, payment_structure: "LEASE", rent_amount: "" })}
+                                        >
+                                            <div className="font-semibold">Lump Sum Lease</div>
+                                            <div className="text-xs opacity-70">One-time payment</div>
+                                        </button>
+                                    </div>
                                 </div>
+
+                                {/* Conditional Amount Field */}
+                                {formData.payment_structure === "RENT" ? (
+                                    <div className="space-y-2">
+                                        <Label className="text-slate-200">Monthly Rent Amount *</Label>
+                                        <Input
+                                            type="number"
+                                            placeholder="e.g. 1500"
+                                            className="glass-input"
+                                            value={formData.rent_amount}
+                                            onChange={(e) => setFormData({ ...formData, rent_amount: e.target.value })}
+                                        />
+                                    </div>
+                                ) : (
+                                    <div className="space-y-2">
+                                        <Label className="text-slate-200">Total Lease Amount *</Label>
+                                        <Input
+                                            type="number"
+                                            placeholder="e.g. 18000"
+                                            className="glass-input"
+                                            value={formData.lease_amount}
+                                            onChange={(e) => setFormData({ ...formData, lease_amount: e.target.value })}
+                                        />
+                                    </div>
+                                )}
+
                                 <div className="space-y-2">
                                     <Label className="text-slate-200">Advance / Deposit</Label>
                                     <Input

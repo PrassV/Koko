@@ -49,10 +49,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
                 // Fetch profile
                 try {
+                    console.log("[AuthContext] Token obtained, fetching profile...");
+                    console.log("[AuthContext] API Base URL:", process.env.NEXT_PUBLIC_API_URL);
                     const res = await api.get("/auth/me");
+                    console.log("[AuthContext] Profile fetched:", res.data);
                     setProfile(res.data);
                 } catch (error: any) {
-                    console.error("Failed to fetch profile", error);
+                    console.error("[AuthContext] Failed to fetch profile", error);
+                    console.error("[AuthContext] Error response:", error.response?.data);
                     if (error.response?.status === 404) {
                         // User exists in Firebase but not in DB -> Needs registration
                         if (!pathname.includes("/register")) {
