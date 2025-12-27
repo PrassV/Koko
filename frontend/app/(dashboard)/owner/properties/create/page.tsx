@@ -155,7 +155,7 @@ export default function CreatePropertyPage() {
                 </div>
             </div>
 
-            <GlassCard className="p-0 overflow-hidden w-full flex flex-col md:flex-row h-auto min-h-[800px] shadow-2xl">
+            <GlassCard className="p-0 overflow-hidden w-full h-auto min-h-[800px] shadow-2xl">
                 <AnimatePresence mode="wait">
                     {step === 1 ? (
                         <motion.div
@@ -163,10 +163,10 @@ export default function CreatePropertyPage() {
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: 20 }}
-                            className="flex flex-col md:flex-row w-full h-full"
+                            className="w-full h-full grid grid-cols-1 md:grid-cols-12"
                         >
                             {/* Step 1: Form */}
-                            <div className="flex-1 p-8 space-y-6 border-r border-white/10 bg-black/20">
+                            <div className="md:col-span-5 p-8 space-y-6 border-r border-white/10 bg-black/20 overflow-y-auto">
                                 <div>
                                     <h2 className="text-2xl font-bold text-white">Location & Type</h2>
                                     <p className="text-slate-400">Where is your property located?</p>
@@ -268,7 +268,7 @@ export default function CreatePropertyPage() {
                             </div>
 
                             {/* Step 1: Map */}
-                            <div className="flex-1 h-[400px] md:h-auto bg-slate-800 relative">
+                            <div className="md:col-span-7 h-[400px] md:h-auto bg-slate-800 relative">
                                 <GoogleMap
                                     zoom={mapZoom}
                                     center={mapCenter}
