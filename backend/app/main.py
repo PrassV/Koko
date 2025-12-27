@@ -42,9 +42,13 @@ app.add_middleware(
 
 # Initialize Firebase
 if settings.FIREBASE_CREDENTIALS_JSON:
-    cred_dict = json.loads(settings.FIREBASE_CREDENTIALS_JSON)
-    cred = credentials.Certificate(cred_dict)
-    firebase_admin.initialize_app(cred)
+    try:
+        cred_dict = json.loads(settings.FIREBASE_CREDENTIALS_JSON)
+        cred = credentials.Certificate(cred_dict)
+        firebase_admin.initialize_app(cred)
+        print("Firebase initialized successfully")
+    except Exception as e:
+        print(f"Warning: Failed to initialize Firebase: {e}")
 else:
     # Just a warning or pass
     pass
