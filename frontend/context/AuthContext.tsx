@@ -51,20 +51,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 try {
                     const res = await api.get("/auth/me");
                     setProfile(res.data);
-
-                    // Redirect logic if on public pages?
-                    // if (pathname === "/login" || pathname === "/") {
-                    //      router.push("/dashboard"); 
-                    // }
-
                 } catch (error: any) {
                     console.error("Failed to fetch profile", error);
                     if (error.response?.status === 404) {
                         // User exists in Firebase but not in DB -> Needs registration
-                        // Maybe redirect to /register-role
                         if (!pathname.includes("/register")) {
-                            router.push("/register");
+                            router.push("/register?mode=complete_profile");
                         }
+                    } else {
+                        // Retry or let UI handle it
                     }
                 }
             } else {
