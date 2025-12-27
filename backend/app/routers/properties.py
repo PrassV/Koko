@@ -16,6 +16,7 @@ class PropertyCreate(BaseModel):
     description: Optional[str] = None
     property_type: Optional[str] = None
     units_count: Optional[int] = 1
+    location_lat: Optional[float] = None
     location_lng: Optional[float] = None
     amenities: List[str] = []
     images: List[str] = []
