@@ -47,8 +47,15 @@ export default function CreatePropertyPage() {
         address_line1: "",
         city: "",
         state: "",
-        pincode: ""
+        pincode: "",
+        amenities: [] as string[]
     });
+
+    const AMENITIES_LIST = [
+        "Watchman", "Gym", "Park", "Swimming Pool", "Lift", "Power Backup",
+        "CCTV", "Club House", "Kids Play Area", "Intercom", "Fire Safety",
+        "Visitor Parking", "Gas Pipeline", "Rain Water Harvesting"
+    ];
 
     // Map State
     const [mapCenter, setMapCenter] = useState({ lat: 13.0827, lng: 80.2707 }); // Default Chennai (Tamil Nadu)
@@ -133,7 +140,7 @@ export default function CreatePropertyPage() {
     if (!isLoaded) return <div className="p-10 text-white">Loading Maps...</div>;
 
     return (
-        <div className="max-w-5xl mx-auto space-y-8">
+        <div className="max-w-7xl mx-auto space-y-6 pb-12">
             {/* Header nav */}
             <div className="flex items-center space-x-4">
                 <Link href="/owner/properties">
@@ -148,7 +155,7 @@ export default function CreatePropertyPage() {
                 </div>
             </div>
 
-            <GlassCard className="p-0 overflow-hidden min-h-[600px] flex">
+            <GlassCard className="p-0 overflow-hidden w-full flex flex-col md:flex-row h-auto min-h-[800px] shadow-2xl">
                 <AnimatePresence mode="wait">
                     {step === 1 ? (
                         <motion.div
@@ -294,7 +301,7 @@ export default function CreatePropertyPage() {
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: -20 }}
-                            className="w-full h-full p-8 flex flex-col"
+                            className="w-full min-h-[800px] p-8 flex flex-col overflow-y-auto"
                         >
                             <div className="max-w-2xl mx-auto w-full space-y-6">
                                 <div className="text-center mb-8">
@@ -344,6 +351,31 @@ export default function CreatePropertyPage() {
                                         />
                                     </div>
                                     <p className="text-xs text-slate-500">Approximate completion date.</p>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <Label className="text-slate-200">Amenities</Label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {AMENITIES_LIST.map((amenity) => (
+                                            <button
+                                                key={amenity}
+                                                onClick={() => {
+                                                    const current = formData.amenities || [];
+                                                    if (current.includes(amenity)) {
+                                                        setFormData({ ...formData, amenities: current.filter(a => a !== amenity) });
+                                                    } else {
+                                                        setFormData({ ...formData, amenities: [...current, amenity] });
+                                                    }
+                                                }}
+                                                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${(formData.amenities || []).includes(amenity)
+                                                    ? 'bg-amber-600 text-black shadow-lg shadow-amber-500/20'
+                                                    : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white border border-white/5'
+                                                    }`}
+                                            >
+                                                {amenity}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
 
                                 <div className="space-y-2">

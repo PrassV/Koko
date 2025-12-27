@@ -18,6 +18,7 @@ class PropertyCreate(BaseModel):
     units_count: Optional[int] = 1
     location_lat: Optional[float] = None
     location_lng: Optional[float] = None
+    amenities: List[str] = []
 
 class UnitCreate(BaseModel):
     unit_number: str
@@ -43,7 +44,8 @@ async def create_property(
         property_type=prop_data.property_type,
         units_count=prop_data.units_count,
         location_lat=prop_data.location_lat,
-        location_lng=prop_data.location_lng
+        location_lng=prop_data.location_lng,
+        amenities=prop_data.amenities
     )
     db.add(new_prop)
     await db.commit()

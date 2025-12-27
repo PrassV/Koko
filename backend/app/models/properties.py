@@ -14,6 +14,7 @@ class Property(Base):
     units_count = Column(Integer, default=1)
     location_lat = Column(Float, nullable=True)
     location_lng = Column(Float, nullable=True)
+    amenities = Column(JSON, nullable=True) # List of strings: ["Gym", "Pool"]
 
     owner = relationship("User", back_populates="properties")
     units = relationship("Unit", back_populates="property")
