@@ -308,3 +308,40 @@ async def get_property_analytics(
         financials=financial_stats,
         alerts=alerts
     )
+    return PropertyAnalytics(
+        occupancy=occupancy_stats,
+        financials=financial_stats,
+        alerts=alerts
+    )
+
+@router.get("/units/{unit_id}")
+async def get_unit_details(
+    unit_id: int,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    from sqlalchemy.orm import selectinload
+    from app.models import Tenancy
+    
+    # Eager load Property, Current Tenancy, and History
+    query = (
+        select(Unit)
+        .options(
+            selectinload(Unit.property),
+            selectinload(Unit.tenancy).selectinload(Tenancy.tenant), # Current tenant user
+            selectinload(Unit.tenancies).selectinload(Tenancy.tenant), # History
+            selectinload(Unit.payments) # Ledger
+        )
+        .where(Unit.id == unit_id)
+    )
+    result = await db.execute(query)
+    unit = result.scalars().first()
+    
+    if not unit:
+        raise HTTPException(status_code=404, detail="Unit not found")
+        
+    # Verify Ownership via Property
+    if unit.property.owner_id != user.id and user.role != "ADMIN":
+        raise HTTPException(status_code=403, detail="Not authorized")
+        
+    return unit
