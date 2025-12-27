@@ -10,13 +10,34 @@ from app.routers import auth, properties, tenancy, maintenance, finance, storage
 
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="Property Management Portal")
+from contextlib import asynccontextmanager
+from sqlalchemy import text
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: Check Database Connection
+    print("Startup: Checking database connection...")
+    try:
+        async with engine.begin() as conn:
+            await conn.execute(text("SELECT 1"))
+        print("Startup: Database connection SUCCESS")
+    except Exception as e:
+        print(f"Startup: Database connection FAILED: {e}")
+        raise e # Fail fast so we see the error in logs immediately
+    
+    yield
+    
+    # Shutdown logic if needed
+    print("Shutdown: Application stopping")
+
+app = FastAPI(title="Property Management Portal", lifespan=lifespan)
 
 origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "https://koko-two-zeta.vercel.app",
     "https://propo.vercel.app",
+    "https://koko-production-1965.up.railway.app"
 ]
 
 # Add FRONTEND_URL from environment if set
@@ -42,16 +63,13 @@ app.add_middleware(
 
 # Initialize Firebase
 if settings.FIREBASE_CREDENTIALS_JSON:
-    try:
-        cred_dict = json.loads(settings.FIREBASE_CREDENTIALS_JSON)
-        cred = credentials.Certificate(cred_dict)
-        firebase_admin.initialize_app(cred)
-        print("Firebase initialized successfully")
-    except Exception as e:
-        print(f"Warning: Failed to initialize Firebase: {e}")
+    # Fail fast if credentials are invalid
+    cred_dict = json.loads(settings.FIREBASE_CREDENTIALS_JSON)
+    cred = credentials.Certificate(cred_dict)
+    firebase_admin.initialize_app(cred)
+    print("Firebase initialized successfully")
 else:
-    # Just a warning or pass
-    pass
+    print("Warning: No FIREBASE_CREDENTIALS_JSON provided")
 
 app.include_router(auth.router)
 app.include_router(properties.router)
@@ -65,3 +83,19 @@ app.include_router(owner.router)
 @app.get("/")
 def read_root():
     return {"message": "Property Management Portal API is running"}
+
+@app.get("/health")
+async def health_check():
+    db_status = "unknown"
+    try:
+        async with engine.begin() as conn:
+            await conn.execute(text("SELECT 1"))
+        db_status = "connected"
+    except Exception as e:
+        db_status = f"error: {str(e)}"
+    
+    return {
+        "status": "online",
+        "database": db_status,
+        "firebase": "initialized" if firebase_admin._apps else "not_initialized"
+    }
