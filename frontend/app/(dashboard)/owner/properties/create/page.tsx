@@ -99,6 +99,170 @@ export default function CreatePropertyWizard() {
     // ... (existing code)
 
     // --- Render Steps ---
+    const renderWelcome = () => (
+        <div className="flex flex-col items-center justify-center h-full text-center space-y-6">
+            <motion.h1
+                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+                className="text-5xl font-extrabold text-primary"
+            >
+                It's easy to get started with Koko
+            </motion.h1>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 0.2 } }} className="space-y-4 text-lg text-muted-foreground max-w-xl">
+                <div className="flex items-center gap-4 p-4 rounded-xl bg-white border border-border shadow-sm">
+                    <span className="text-2xl font-bold text-primary">1</span>
+                    <div className="text-left">
+                        <h3 className="font-semibold text-foreground">Tell us about your place</h3>
+                        <p className="text-sm text-muted-foreground">Share some basic info, location, and type.</p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-4 p-4 rounded-xl bg-white border border-border shadow-sm">
+                    <span className="text-2xl font-bold text-primary">2</span>
+                    <div className="text-left">
+                        <h3 className="font-semibold text-foreground">Make it stand out</h3>
+                        <p className="text-sm text-muted-foreground">Add photos, amenities, and details.</p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-4 p-4 rounded-xl bg-white border border-border shadow-sm">
+                    <span className="text-2xl font-bold text-primary">3</span>
+                    <div className="text-left">
+                        <h3 className="font-semibold text-foreground">Finish up and publish</h3>
+                        <p className="text-sm text-muted-foreground">Review your listing and go live.</p>
+                    </div>
+                </div>
+            </motion.div>
+        </div>
+    );
+
+    const renderTypeSelection = () => (
+        <div className="max-w-4xl mx-auto w-full">
+            <h2 className="text-3xl font-bold text-foreground mb-8">Which of these best describes your place?</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {PROPERTY_TYPES.map(type => (
+                    <button
+                        key={type.id}
+                        onClick={() => updateForm("property_type", type.id)}
+                        className={`
+                            h-32 flex flex-col items-start justify-between p-4 rounded-xl border-2 transition-all shadow-sm
+                            ${formData.property_type === type.id
+                                ? "border-primary bg-primary/5 shadow-primary/10"
+                                : "border-border bg-white hover:border-primary/30 hover:bg-secondary"
+                            }
+                        `}
+                    >
+                        <type.icon className={`h-8 w-8 ${formData.property_type === type.id ? "text-primary" : "text-muted-foreground"}`} />
+                        <span className={`text-lg font-medium ${formData.property_type === type.id ? "text-primary" : "text-foreground"}`}>{type.label}</span>
+                    </button>
+                ))}
+            </div>
+        </div>
+    );
+
+    const renderLocation = () => (
+        <div className="w-full h-full flex flex-col md:flex-row gap-6">
+            <div className="w-full md:w-1/3 space-y-4">
+                <h2 className="text-3xl font-bold text-foreground mb-4">Where's your place located?</h2>
+                <div className="space-y-3">
+                    <Input className="glass-inputs" placeholder="Address Line 1" value={formData.address_line1} onChange={e => updateForm("address_line1", e.target.value)} />
+                    <div className="flex gap-2">
+                        <Input className="glass-inputs" placeholder="City" value={formData.city} onChange={e => updateForm("city", e.target.value)} />
+                        <Input className="glass-inputs" placeholder="State" value={formData.state} onChange={e => updateForm("state", e.target.value)} />
+                    </div>
+                    <Input className="glass-inputs" placeholder="Pincode" value={formData.pincode} onChange={e => updateForm("pincode", e.target.value)} />
+                </div>
+                <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
+                    <p className="text-primary text-sm flex items-center gap-2">
+                        <MapPin className="h-4 w-4" />
+                        We'll drop a pin here for tenants.
+                    </p>
+                </div>
+            </div>
+            <div className="flex-1 rounded-2xl overflow-hidden border border-border relative min-h-[400px] shadow-md">
+                {isLoaded && (
+                    <GoogleMap
+                        zoom={mapZoom}
+                        center={mapCenter}
+                        mapContainerClassName="w-full h-full"
+                        options={{ disableDefaultUI: true }}
+                        onLoad={map => { mapRef.current = map; }}
+                    >
+                        <Marker position={mapCenter} />
+                    </GoogleMap>
+                )}
+            </div>
+        </div>
+    );
+
+    const renderBasics = () => (
+        <div className="max-w-2xl mx-auto w-full space-y-8">
+            <h2 className="text-3xl font-bold text-foreground mb-8">Share some basics about your place</h2>
+
+            {/* Counter Row */}
+            <div className="flex items-center justify-between py-6 border-b border-border/40">
+                <div className="flex items-center gap-4">
+                    <Building2 className="h-6 w-6 text-muted-foreground" />
+                    <span className="text-xl text-foreground font-medium">Number of Units</span>
+                </div>
+                <div className="flex items-center gap-4">
+                    <Button variant="outline" size="icon" className="rounded-full bg-white border-border hover:bg-secondary text-foreground"
+                        onClick={() => updateForm("units_count", Math.max(1, formData.units_count - 1))}>-</Button>
+                    <span className="text-xl font-bold text-foreground w-8 text-center">{formData.units_count}</span>
+                    <Button variant="outline" size="icon" className="rounded-full bg-white border-border hover:bg-secondary text-foreground"
+                        onClick={() => updateForm("units_count", formData.units_count + 1)}>+</Button>
+                </div>
+            </div>
+
+            <div className="space-y-4">
+                <Label className="text-xl text-foreground">Total Size (Sq Ft)</Label>
+                <div className="relative">
+                    <Ruler className="absolute left-4 top-3.5 h-5 w-5 text-muted-foreground" />
+                    <Input className="glass-inputs pl-12 text-lg" type="number" placeholder="e.g. 1500" value={formData.size_sqft} onChange={e => updateForm("size_sqft", e.target.value)} />
+                </div>
+            </div>
+
+            <div className="space-y-4">
+                <Label className="text-xl text-foreground">Completion Date</Label>
+                <Input className="glass-inputs text-lg" type="date" value={formData.construction_date} onChange={e => updateForm("construction_date", e.target.value)} />
+            </div>
+
+            <div className="space-y-4">
+                <Label className="text-xl text-foreground">Description</Label>
+                <Textarea className="glass-inputs min-h-[150px] text-lg" placeholder="Describe the vibe of your place..." value={formData.description} onChange={e => updateForm("description", e.target.value)} />
+            </div>
+        </div>
+    );
+
+    const renderAmenities = () => (
+        <div className="max-w-3xl mx-auto w-full">
+            <h2 className="text-3xl font-bold text-foreground mb-8">What does this place offer?</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {AMENITIES_LIST.map(amenity => {
+                    const isSelected = formData.amenities.includes(amenity.id);
+                    return (
+                        <button
+                            key={amenity.id}
+                            onClick={() => {
+                                const newAmenities = isSelected
+                                    ? formData.amenities.filter(a => a !== amenity.id)
+                                    : [...formData.amenities, amenity.id];
+                                updateForm("amenities", newAmenities);
+                            }}
+                            className={`
+                                h-24 flex flex-col items-center justify-center gap-2 p-4 rounded-xl border-2 transition-all shadow-sm
+                                ${isSelected
+                                    ? "border-primary bg-primary/5"
+                                    : "border-border bg-white hover:bg-secondary"
+                                }
+                            `}
+                        >
+                            <amenity.icon className={`h-8 w-8 ${isSelected ? "text-primary" : "text-muted-foreground"}`} />
+                            <span className={`font-medium ${isSelected ? "text-primary" : "text-muted-foreground"}`}>{amenity.label}</span>
+                        </button>
+                    );
+                })}
+            </div>
+        </div>
+    );
+
     const renderRichDetails = () => {
         const [tempHighlight, setTempHighlight] = useState("");
         const [tempRule, setTempRule] = useState("");
@@ -127,12 +291,12 @@ export default function CreatePropertyWizard() {
 
         return (
             <div className="max-w-3xl mx-auto w-full space-y-8">
-                <h2 className="text-3xl font-bold text-white mb-2">Unique details & House Rules</h2>
-                <p className="text-slate-400 mb-6">Mention what makes your place special and any rules.</p>
+                <h2 className="text-3xl font-bold text-foreground mb-2">Unique details & House Rules</h2>
+                <p className="text-muted-foreground mb-6">Mention what makes your place special and any rules.</p>
 
                 {/* Highlights */}
                 <div className="space-y-4">
-                    <Label className="text-xl text-white">Highlights</Label>
+                    <Label className="text-xl text-foreground">Highlights</Label>
                     <div className="flex gap-2">
                         <Input
                             className="glass-inputs"
@@ -141,12 +305,12 @@ export default function CreatePropertyWizard() {
                             onChange={e => setTempHighlight(e.target.value)}
                             onKeyDown={e => e.key === 'Enter' && addHighlight()}
                         />
-                        <Button onClick={addHighlight} className="bg-amber-500 hover:bg-amber-600 text-white">Add</Button>
+                        <Button onClick={addHighlight} className="bg-primary hover:bg-primary/90 text-primary-foreground">Add</Button>
                     </div>
                     <div className="flex flex-wrap gap-2 min-h-[40px]">
                         {formData.highlights?.map((h: string, i: number) => (
-                            <span key={i} className="px-3 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full text-sm flex items-center gap-2">
-                                {h} <X className="h-3 w-3 cursor-pointer hover:text-white" onClick={() => updateForm("highlights", formData.highlights.filter((_, idx) => idx !== i))} />
+                            <span key={i} className="px-3 py-1 bg-primary/10 text-primary border border-primary/20 rounded-full text-sm flex items-center gap-2">
+                                {h} <X className="h-3 w-3 cursor-pointer hover:text-foreground" onClick={() => updateForm("highlights", formData.highlights.filter((_, idx) => idx !== i))} />
                             </span>
                         ))}
                     </div>
@@ -154,7 +318,7 @@ export default function CreatePropertyWizard() {
 
                 {/* House Rules */}
                 <div className="space-y-4">
-                    <Label className="text-xl text-white">House Rules</Label>
+                    <Label className="text-xl text-foreground">House Rules</Label>
                     <div className="flex gap-2">
                         <Input
                             className="glass-inputs"
@@ -163,13 +327,13 @@ export default function CreatePropertyWizard() {
                             onChange={e => setTempRule(e.target.value)}
                             onKeyDown={e => e.key === 'Enter' && addRule()}
                         />
-                        <Button onClick={addRule} className="bg-slate-700 hover:bg-slate-600 text-white">Add</Button>
+                        <Button onClick={addRule} className="bg-secondary hover:bg-secondary/80 text-foreground border border-border">Add</Button>
                     </div>
                     <div className="space-y-2">
                         {formData.house_rules?.map((r: string, i: number) => (
-                            <div key={i} className="flex justify-between items-center p-3 bg-white/5 rounded-lg border border-white/10">
-                                <span className="text-slate-300">{r}</span>
-                                <X className="h-4 w-4 text-slate-500 cursor-pointer hover:text-white" onClick={() => updateForm("house_rules", formData.house_rules.filter((_, idx) => idx !== i))} />
+                            <div key={i} className="flex justify-between items-center p-3 bg-white rounded-lg border border-border shadow-sm">
+                                <span className="text-foreground">{r}</span>
+                                <X className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-primary" onClick={() => updateForm("house_rules", formData.house_rules.filter((_, idx) => idx !== i))} />
                             </div>
                         ))}
                     </div>
@@ -177,7 +341,7 @@ export default function CreatePropertyWizard() {
 
                 {/* Nearby */}
                 <div className="space-y-4">
-                    <Label className="text-xl text-white">What's Nearby? (Optional)</Label>
+                    <Label className="text-xl text-foreground">What's Nearby? (Optional)</Label>
                     <div className="flex gap-2">
                         <Input
                             className="glass-inputs flex-1"
@@ -191,13 +355,13 @@ export default function CreatePropertyWizard() {
                             value={tempNearby.distance}
                             onChange={e => setTempNearby(prev => ({ ...prev, distance: e.target.value }))}
                         />
-                        <Button onClick={addNearby} className="bg-slate-700 hover:bg-slate-600 text-white">Add</Button>
+                        <Button onClick={addNearby} className="bg-secondary hover:bg-secondary/80 text-foreground border border-border">Add</Button>
                     </div>
                     <div className="space-y-2">
                         {formData.nearby_places?.map((p: any, i: number) => (
-                            <div key={i} className="flex justify-between items-center p-3 bg-white/5 rounded-lg border border-white/10">
-                                <span className="text-slate-300"><strong>{p.name}</strong> • {p.distance}</span>
-                                <X className="h-4 w-4 text-slate-500 cursor-pointer hover:text-white" onClick={() => updateForm("nearby_places", formData.nearby_places.filter((_, idx) => idx !== i))} />
+                            <div key={i} className="flex justify-between items-center p-3 bg-white rounded-lg border border-border shadow-sm">
+                                <span className="text-foreground"><strong>{p.name}</strong> • {p.distance}</span>
+                                <X className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-primary" onClick={() => updateForm("nearby_places", formData.nearby_places.filter((_, idx) => idx !== i))} />
                             </div>
                         ))}
                     </div>
@@ -206,15 +370,96 @@ export default function CreatePropertyWizard() {
         );
     };
 
+    const renderPhotos = () => (
+        <div className="max-w-3xl mx-auto w-full space-y-6">
+            <h2 className="text-3xl font-bold text-foreground mb-2">Add some photos</h2>
+            <p className="text-muted-foreground mb-6">You'll need 5 photos to get started. You can add more or change them later.</p>
+
+            <div
+                onClick={() => document.getElementById('photo-upload')?.click()}
+                className={`
+                    border-2 border-dashed border-border rounded-2xl h-[300px] flex flex-col items-center justify-center
+                    cursor-pointer hover:bg-secondary transition-colors group relative overflow-hidden bg-background
+                    ${isUploading ? 'pointer-events-none opacity-50' : ''}
+                `}
+            >
+                <input id="photo-upload" type="file" multiple accept="image/*" className="hidden" onChange={handlePhotoUpload} />
+                <div className="p-6 bg-secondary rounded-full mb-4 group-hover:scale-110 transition-transform">
+                    {isUploading ? <Loader2 className="h-8 w-8 animate-spin text-primary" /> : <Upload className="h-8 w-8 text-primary" />}
+                </div>
+                <h3 className="text-xl font-semibold text-foreground">Click to upload</h3>
+                <p className="text-muted-foreground">or drag and drop here</p>
+            </div>
+
+            {uploadedPhotos.length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                    {uploadedPhotos.map((url, i) => (
+                        <div key={i} className="aspect-square relative rounded-xl overflow-hidden group border border-border">
+                            <img src={url} alt="Property" className="w-full h-full object-cover" />
+                            <button
+                                onClick={() => setUploadedPhotos(prev => prev.filter((_, idx) => idx !== i))}
+                                className="absolute top-2 right-2 bg-destructive/50 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/80"
+                            >
+                                <X className="h-4 w-4 text-white" />
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+
+    const renderReview = () => (
+        <div className="max-w-2xl mx-auto w-full space-y-8">
+            <h2 className="text-3xl font-bold text-foreground mb-6">Review your listing</h2>
+
+            <div className="bg-card border border-border rounded-2xl p-6 space-y-6 shadow-sm">
+                <div className="flex items-start gap-6">
+                    <div className="w-32 h-32 rounded-xl overflow-hidden bg-secondary flex-shrink-0">
+                        {uploadedPhotos[0] ? (
+                            <img src={uploadedPhotos[0]} className="w-full h-full object-cover" />
+                        ) : <div className="w-full h-full flex items-center justify-center text-muted-foreground"><Home /></div>}
+                    </div>
+                    <div>
+                        <h3 className="text-2xl font-bold text-foreground">{formData.name || "Untitled Property"}</h3>
+                        <p className="text-muted-foreground text-lg">{formData.address_line1}, {formData.city}</p>
+                        <div className="flex items-center gap-4 mt-2">
+                            <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium border border-primary/20">
+                                {formData.property_type || "Type Unset"}
+                            </span>
+                            <span className="text-muted-foreground">{formData.units_count} Units</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border">
+                    <div>
+                        <Label className="text-muted-foreground text-xs uppercase tracking-wider">Size</Label>
+                        <p className="text-foreground font-medium">{formData.size_sqft || "N/A"} sqft</p>
+                    </div>
+                    <div>
+                        <Label className="text-muted-foreground text-xs uppercase tracking-wider">Amenities</Label>
+                        <p className="text-foreground font-medium">{formData.amenities.length} Selected</p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="flex items-center gap-4 p-4 rounded-xl bg-primary/5 border border-primary/10 text-primary/80">
+                <Shield className="h-5 w-5 flex-shrink-0" />
+                <p className="text-sm">Your listing will be visible to tenants immediately after publishing.</p>
+            </div>
+        </div>
+    );
+
     // ... (rest of renders)
 
     // --- Main Layout ---
     return (
-        <div className="min-h-screen bg-black text-white flex flex-col">
+        <div className="min-h-screen bg-background text-foreground flex flex-col">
             {/* ... header ... */}
-            <div className="h-16 px-8 flex items-center justify-between border-b border-white/10 bg-black/50 backdrop-blur-md sticky top-0 z-50">
-                <button className="p-2 -ml-2 rounded-full hover:bg-white/10" onClick={() => router.push('/owner/properties')}><X className="h-5 w-5 text-slate-400" /></button>
-                <div className="text-sm font-medium text-slate-400">Step {step} of 7</div>
+            <div className="h-16 px-8 flex items-center justify-between border-b border-border/40 bg-background/80 backdrop-blur-md sticky top-0 z-50">
+                <button className="p-2 -ml-2 rounded-full hover:bg-secondary" onClick={() => router.push('/owner/properties')}><X className="h-5 w-5 text-muted-foreground" /></button>
+                <div className="text-sm font-medium text-muted-foreground">Step {step} of 7</div>
             </div>
 
             {/* Content Area */}
@@ -241,12 +486,12 @@ export default function CreatePropertyWizard() {
             </div>
 
             {/* Footer */}
-            <div className="h-20 border-t border-white/10 bg-black flex items-center justify-between px-8 md:px-12 sticky bottom-0 z-50">
+            <div className="h-20 border-t border-border/40 bg-background flex items-center justify-between px-8 md:px-12 sticky bottom-0 z-50">
                 <Button
                     variant="ghost"
                     onClick={prevStep}
                     disabled={step === 0 || loading}
-                    className="text-white hover:bg-white/10 hover:text-white underline-offset-4"
+                    className="text-muted-foreground hover:bg-secondary hover:text-foreground underline-offset-4"
                 >
                     Back
                 </Button>
@@ -255,7 +500,7 @@ export default function CreatePropertyWizard() {
                     {step === 0 ? (
                         <Button
                             size="lg"
-                            className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold px-8 shadow-lg shadow-amber-500/25"
+                            className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-8 shadow-lg shadow-primary/25"
                             onClick={nextStep}
                         >
                             Get Started
@@ -265,7 +510,7 @@ export default function CreatePropertyWizard() {
                             size="lg"
                             onClick={handleSubmit}
                             disabled={loading}
-                            className="bg-white text-black hover:bg-slate-200 font-bold px-8"
+                            className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-8"
                         >
                             {loading ? <Loader2 className="animate-spin mr-2" /> : null}
                             Publish Listing
@@ -274,7 +519,7 @@ export default function CreatePropertyWizard() {
                         <Button
                             size="lg"
                             onClick={nextStep}
-                            className="bg-white text-black hover:bg-slate-200 font-bold px-8"
+                            className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-8"
                         >
                             Next <ChevronRight className="ml-2 h-4 w-4" />
                         </Button>
