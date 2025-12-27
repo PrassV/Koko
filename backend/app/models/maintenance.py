@@ -15,7 +15,8 @@ class MaintenanceRequest(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     unit_id = Column(Integer, ForeignKey("units.id"), nullable=False)
-    tenant_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    tenant_id = Column(Integer, ForeignKey("users.id"), nullable=True) # Optional if raised by owner for empty unit
+    reported_by_id = Column(Integer, ForeignKey("users.id"), nullable=False) # Who actually reported it (Owner or Tenant)
     
     title = Column(String, nullable=False)
     description = Column(Text, nullable=False)

@@ -7,7 +7,12 @@ class Tenancy(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     unit_id = Column(Integer, ForeignKey("units.id"), nullable=False)
-    tenant_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    tenant_id = Column(Integer, ForeignKey("users.id"), nullable=True) # Nullable for offline tenants
+    
+    # Offline Tenant Details
+    tenant_name = Column(String, nullable=True)
+    tenant_email = Column(String, nullable=True)
+    tenant_phone = Column(String, nullable=True)
     
     start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=True)

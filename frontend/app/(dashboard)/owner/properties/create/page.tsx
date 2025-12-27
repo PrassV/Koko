@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Loader2, MapPin, ArrowRight, Upload, Calendar } from "lucide-react";
+import { ArrowLeft, Loader2, MapPin, ArrowRight, Upload, Calendar, FileText } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -30,6 +30,10 @@ export default function CreatePropertyPage() {
     const [step, setStep] = useState(1);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadedPhotos, setUploadedPhotos] = useState<string[]>([]);
+
+    // Document Upload State
+    const [isUploadingDocs, setIsUploadingDocs] = useState(false);
+    const [uploadedDocs, setUploadedDocs] = useState<{ name: string, url: string }[]>([]);
 
     // Form State
     const [formData, setFormData] = useState({
@@ -110,6 +114,27 @@ export default function CreatePropertyPage() {
         }
     };
 
+    const handleDocUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files || e.target.files.length === 0) return;
+
+        setIsUploadingDocs(true);
+        const file = e.target.files[0];
+
+        try {
+            const newBlob = await upload(file.name, file, {
+                access: 'public',
+                handleUploadUrl: '/api/upload',
+            });
+            setUploadedDocs(prev => [...prev, { name: file.name, url: newBlob.url }]);
+            toast.success("Document uploaded successfully");
+        } catch (error) {
+            console.error("Upload failed:", error);
+            toast.error("Failed to upload document");
+        } finally {
+            setIsUploadingDocs(false);
+        }
+    };
+
     const handleSubmit = async () => {
         setLoading(true);
         try {
@@ -121,9 +146,10 @@ export default function CreatePropertyPage() {
                 units_count: Number(formData.units_count),
                 size_sqft: Number(formData.size_sqft),
                 specifications: {
-                    ...formData.specifications,
-                    photos: uploadedPhotos
-                }
+                    ...formData.specifications
+                },
+                images: uploadedPhotos,
+                documents: uploadedDocs
             };
 
             await api.post("/properties/", payload);
@@ -425,6 +451,50 @@ export default function CreatePropertyPage() {
                                     )}
                                 </div>
 
+                                <div className="space-y-2">
+                                    <Label className="text-slate-200">Property Documents</Label>
+                                    <div
+                                        onClick={() => document.getElementById('doc-upload')?.click()}
+                                        className={`border-2 border-dashed border-white/10 rounded-xl p-6 flex items-center justify-center text-slate-400 hover:bg-white/5 transition-colors cursor-pointer group ${isUploadingDocs ? 'opacity-50 pointer-events-none' : ''}`}
+                                    >
+                                        <input
+                                            type="file"
+                                            id="doc-upload"
+                                            className="hidden"
+                                            accept=".pdf,.doc,.docx"
+                                            onChange={handleDocUpload}
+                                        />
+                                        <div className="flex flex-col items-center">
+                                            {isUploadingDocs ? (
+                                                <Loader2 className="h-6 w-6 animate-spin text-amber-400 mb-2" />
+                                            ) : (
+                                                <FileText className="h-6 w-6 mb-2 text-slate-500 group-hover:text-amber-400" />
+                                            )}
+                                            <p className="text-sm font-medium">{isUploadingDocs ? 'Uploading...' : 'Upload Property Deeds / Documents'}</p>
+                                            <p className="text-xs text-slate-500">PDF, DOC up to 5MB</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Uploaded Docs Preview */}
+                                    {uploadedDocs.length > 0 && (
+                                        <div className="space-y-2 mt-3">
+                                            {uploadedDocs.map((doc, i) => (
+                                                <div key={i} className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/5">
+                                                    <div className="flex items-center space-x-3">
+                                                        <FileText className="h-4 w-4 text-amber-400" />
+                                                        <span className="text-sm text-slate-200 truncate max-w-[200px]">{doc.name}</span>
+                                                    </div>
+                                                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-red-400 hover:text-red-300" onClick={() => {
+                                                        setUploadedDocs(prev => prev.filter((_, idx) => idx !== i));
+                                                    }}>
+                                                        ×
+                                                    </Button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+
                                 <div className="pt-6 flex justify-between">
                                     <Button
                                         variant="outline"
@@ -436,7 +506,7 @@ export default function CreatePropertyPage() {
                                     <Button
                                         className="bg-yellow-600 hover:bg-yellow-700 min-w-[150px] text-black"
                                         onClick={handleSubmit}
-                                        disabled={loading || isUploading}
+                                        disabled={loading || isUploading || isUploadingDocs}
                                     >
                                         {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Create Property"}
                                     </Button>

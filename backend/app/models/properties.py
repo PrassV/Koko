@@ -14,7 +14,10 @@ class Property(Base):
     units_count = Column(Integer, default=1)
     location_lat = Column(Float, nullable=True)
     location_lng = Column(Float, nullable=True)
+    location_lng = Column(Float, nullable=True)
     amenities = Column(JSON, nullable=True) # List of strings: ["Gym", "Pool"]
+    images = Column(JSON, nullable=True) # List of image URLs
+    documents = Column(JSON, nullable=True) # List of {"name": "doc", "url": "..."}
 
     owner = relationship("User", back_populates="properties")
     units = relationship("Unit", back_populates="property")
@@ -27,6 +30,7 @@ class Unit(Base):
     unit_number = Column(String, nullable=False)
     specifications = Column(JSON, nullable=True)  # e.g., {"bhk": 2, "sqft": 1000}
     images = Column(JSON, nullable=True) # List of image URLs
+    status = Column(String, default="VACANT") # VACANT, OCCUPIED, UNDER_MAINTENANCE
     size_sqft = Column(Float, nullable=True)
     facing = Column(String, nullable=True) # e.g. North, East
     construction_date = Column(Date, nullable=True)

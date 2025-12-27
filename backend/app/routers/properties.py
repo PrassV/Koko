@@ -16,9 +16,10 @@ class PropertyCreate(BaseModel):
     description: Optional[str] = None
     property_type: Optional[str] = None
     units_count: Optional[int] = 1
-    location_lat: Optional[float] = None
     location_lng: Optional[float] = None
     amenities: List[str] = []
+    images: List[str] = []
+    documents: List[dict] = [] # [{"name": "doc", "url": "..."}]
 
 class UnitCreate(BaseModel):
     unit_number: str
@@ -26,6 +27,7 @@ class UnitCreate(BaseModel):
     size_sqft: Optional[float] = None
     facing: Optional[str] = None
     construction_date: Optional[date] = None
+    status: str = "VACANT"
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_property(
@@ -45,7 +47,9 @@ async def create_property(
         units_count=prop_data.units_count,
         location_lat=prop_data.location_lat,
         location_lng=prop_data.location_lng,
-        amenities=prop_data.amenities
+        amenities=prop_data.amenities,
+        images=prop_data.images,
+        documents=prop_data.documents
     )
     db.add(new_prop)
     await db.commit()
@@ -132,7 +136,8 @@ async def create_unit(
         specifications=unit_data.specifications,
         size_sqft=unit_data.size_sqft,
         facing=unit_data.facing,
-        construction_date=unit_data.construction_date
+        construction_date=unit_data.construction_date,
+        status=unit_data.status
     )
     db.add(new_unit)
     await db.commit()

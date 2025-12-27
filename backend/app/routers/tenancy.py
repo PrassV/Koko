@@ -12,7 +12,9 @@ router = APIRouter(prefix="/tenancy", tags=["Tenancy"])
 
 class TenancyCreate(BaseModel):
     unit_id: int
-    tenant_email: str # Use email to find tenant
+    tenant_email: Optional[str] = None # Optional for offline
+    tenant_name: Optional[str] = None # Required if offline
+    tenant_phone: Optional[str] = None
     start_date: date
     end_date: Optional[date] = None
     rent_amount: float
@@ -33,21 +35,35 @@ async def create_tenancy(
     if not unit:
         raise HTTPException(status_code=404, detail="Unit not found")
         
-    # Check tenant existence
-    tenant_res = await db.execute(select(User).where(User.email == data.tenant_email))
-    tenant = tenant_res.scalars().first()
-    if not tenant:
-        raise HTTPException(status_code=404, detail="Tenant user not found. They must register first.")
+    tenant_id = None
+    
+    # Check tenant existence if email provided
+    if data.tenant_email:
+        tenant_res = await db.execute(select(User).where(User.email == data.tenant_email))
+        tenant = tenant_res.scalars().first()
+        if tenant:
+            tenant_id = tenant.id
+    
+    # If no tenant found by email, check if we have name for offline
+    if not tenant_id and not data.tenant_name:
+         raise HTTPException(status_code=400, detail="Must provide Tenant Email (for registered user) or Tenant Name (for offline)")
     
     new_tenancy = Tenancy(
         unit_id=data.unit_id,
-        tenant_id=tenant.id,
+        tenant_id=tenant_id,
+        tenant_name=data.tenant_name,
+        tenant_email=data.tenant_email,
+        tenant_phone=data.tenant_phone,
         start_date=data.start_date,
         end_date=data.end_date,
         rent_amount=data.rent_amount,
         advance_amount=data.advance_amount
     )
     db.add(new_tenancy)
+    
+    # Update unit status
+    unit.status = "OCCUPIED"
+    
     await db.commit()
     await db.refresh(new_tenancy)
     return new_tenancy
