@@ -72,7 +72,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         });
 
         return () => unsubscribe();
-    }, [pathname, router]);
+    }, []);
+
+    useEffect(() => {
+        if (!loading && user && profile) {
+            if (pathname === "/login" || pathname === "/register" || pathname === "/") {
+                if (profile.role === "OWNER") router.push("/owner");
+                else if (profile.role === "TENANT") router.push("/tenant");
+                else if (profile.role === "ADMIN") router.push("/admin/users");
+                else router.push("/dashboard");
+            }
+        }
+    }, [user, profile, loading, pathname, router]);
 
     const logout = async () => {
         await auth.signOut();

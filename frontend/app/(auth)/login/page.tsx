@@ -23,7 +23,8 @@ export default function LoginPage() {
             const user = userCredential.user;
             await user.getIdToken(true); // Force refresh
             toast.success("Logged in successfully");
-            router.push("/owner"); // AuthContext will handle redirect if profile is missing 404
+            toast.success("Logged in successfully");
+            // router.push("/owner"); // AuthContext now handles all redirects based on role
         } catch (err: any) {
             toast.error(err.message);
         }
