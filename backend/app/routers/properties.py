@@ -19,6 +19,9 @@ class PropertyCreate(BaseModel):
     location_lat: Optional[float] = None
     location_lng: Optional[float] = None
     amenities: List[str] = []
+    highlights: List[str] = []
+    house_rules: List[str] = []
+    nearby_places: List[dict] = []
     images: List[str] = []
     documents: List[dict] = [] # [{"name": "doc", "url": "..."}]
 
@@ -49,6 +52,9 @@ async def create_property(
         location_lat=prop_data.location_lat,
         location_lng=prop_data.location_lng,
         amenities=prop_data.amenities,
+        highlights=prop_data.highlights,
+        house_rules=prop_data.house_rules,
+        nearby_places=prop_data.nearby_places,
         images=prop_data.images,
         documents=prop_data.documents
     )

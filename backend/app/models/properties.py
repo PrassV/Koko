@@ -16,6 +16,9 @@ class Property(Base):
     location_lng = Column(Float, nullable=True)
     location_lng = Column(Float, nullable=True)
     amenities = Column(JSON, nullable=True) # List of strings: ["Gym", "Pool"]
+    highlights = Column(JSON, nullable=True) # List of strings: ["Peaceful", "City Center"]
+    house_rules = Column(JSON, nullable=True) # List of strings: ["No smoking", "Pets allowed"]
+    nearby_places = Column(JSON, nullable=True) # List of Dict: [{"name": "Park", "distance": "5m"}]
     images = Column(JSON, nullable=True) # List of image URLs
     documents = Column(JSON, nullable=True) # List of {"name": "doc", "url": "..."}
 

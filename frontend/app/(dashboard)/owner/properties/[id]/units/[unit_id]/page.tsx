@@ -8,7 +8,7 @@ import { ArrowLeft, User, Calendar, FileText, DollarSign, History, Wrench, Check
 import { format } from "date-fns";
 
 export default function UnitDetailsPage() {
-    const { id, unitId } = useParams(); // property id, unit id
+    const { id, unit_id } = useParams(); // property id, unit id (matches [unit_id] folder)
     const router = useRouter();
     const [unit, setUnit] = useState<any>(null);
     const [loading, setLoading] = useState(true);
@@ -17,7 +17,7 @@ export default function UnitDetailsPage() {
         const fetchUnit = async () => {
             try {
                 // Fetch from our new endpoint
-                const res = await api.get(`/properties/units/${unitId}`);
+                const res = await api.get(`/properties/units/${unit_id}`);
                 setUnit(res.data);
             } catch (err) {
                 console.error(err);
@@ -25,8 +25,8 @@ export default function UnitDetailsPage() {
                 setLoading(false);
             }
         };
-        if (unitId) fetchUnit();
-    }, [unitId]);
+        if (unit_id) fetchUnit();
+    }, [unit_id]);
 
     if (loading) return <div className="p-10 flex items-center justify-center min-h-[50vh]"><div className="animate-spin h-8 w-8 border-4 border-amber-500 rounded-full border-t-transparent"></div></div>;
     if (!unit) return <div className="p-10 text-foreground">Unit not found.</div>;
@@ -56,8 +56,8 @@ export default function UnitDetailsPage() {
                 <div className="flex items-center gap-3 mb-2">
                     <h1 className="text-3xl font-bold text-foreground">Unit {unit.unit_number}</h1>
                     <span className={`px-3 py-1 rounded-full text-xs font-bold border ${unit.status === 'OCCUPIED' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' :
-                            unit.status === 'VACANT' ? 'bg-red-100 text-red-700 border-red-200' :
-                                'bg-amber-100 text-amber-700 border-amber-200'
+                        unit.status === 'VACANT' ? 'bg-red-100 text-red-700 border-red-200' :
+                            'bg-amber-100 text-amber-700 border-amber-200'
                         }`}>
                         {unit.status}
                     </span>
@@ -109,7 +109,7 @@ export default function UnitDetailsPage() {
                 <GlassCard className="p-8 text-center bg-slate-50 border-dashed border-slate-300">
                     <h2 className="text-xl font-semibold text-foreground mb-2">This unit is vacant</h2>
                     <p className="text-muted-foreground mb-4">No active tenant found.</p>
-                    <Button onClick={() => router.push(`/owner/users/create?unitId=${unitId}`)} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                    <Button onClick={() => router.push(`/owner/users/create?unitId=${unit_id}`)} className="bg-emerald-600 hover:bg-emerald-700 text-white">
                         <Plus className="mr-2 h-4 w-4" /> Add Tenant
                     </Button>
                 </GlassCard>

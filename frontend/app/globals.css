@@ -59,29 +59,46 @@
 /* Base Variables */
 @layer base {
   :root {
-    /* Light Mode Variables */
+    /* High Contrast Premium Theme (Bronze & Slate) */
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Pure White */
+    --foreground: 222.2 47.4% 11.2%;
+    /* Deep Slate Black #0f172a */
+
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 222.2 47.4% 11.2%;
+
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 45 93% 47%;
-    /* Gold */
-    --primary-foreground: 26 83% 14%;
-    --secondary: 45 30% 96%;
-    /* Light Gold Tint */
-    --secondary-foreground: 45 40% 15%;
+    --popover-foreground: 222.2 47.4% 11.2%;
+
+    /* Primary: Deep Bronze/Ochre (Accessible on White) */
+    --primary: 32 95% 44%;
+    /* #ca8a04 equivalent or darker */
+    --primary-foreground: 0 0% 100%;
+    /* White text on Primary button */
+
+    /* Secondary: Cool Slate Grey */
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
     --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 45 30% 96%;
-    --accent-foreground: 45 40% 15%;
+    --muted-foreground: 215.4 16.3% 40%;
+    /* Darker gray for better legibility */
+
+    --accent: 210 40% 96.1%;
+    /* Cool Gray Accent */
+    --accent-foreground: 222.2 47.4% 11.2%;
+
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 45 93% 47%;
-    --radius: 0.75rem;
+
+    --border: 214.3 31.8% 90%;
+    --input: 214.3 31.8% 90%;
+    --ring: 32 95% 44%;
+    /* Match Primary */
+
+    --radius: 0.5rem;
+    /* Slightly tighter radius for cleaner look */
   }
 }
 

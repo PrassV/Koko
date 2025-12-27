@@ -113,7 +113,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <header className="h-16 border-b border-border/40 bg-white/30 backdrop-blur-md px-8 flex items-center justify-between sticky top-0 z-20">
                     <div className="flex items-center gap-4">
                         <h2 className="text-xl font-semibold text-foreground capitalize">
-                            {pathname.split('/').pop()?.replace('-', ' ') || 'Dashboard'}
+                            {(() => {
+                                const segments = pathname.split('/');
+                                const last = segments.pop();
+                                if (last && !isNaN(Number(last))) {
+                                    const prev = segments.pop();
+                                    // If strictly numeric, try to provide context
+                                    return prev ? `${prev.replace(/-/g, ' ')} Details` : 'Details';
+                                }
+                                return last?.replace(/-/g, ' ') || 'Dashboard';
+                            })()}
                         </h2>
                     </div>
                     <div className="flex items-center gap-4">

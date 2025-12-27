@@ -88,7 +88,7 @@ export default function PropertyDetailsPage() {
                     <Button variant="outline" className="border-border text-foreground hover:bg-slate-50" onClick={() => router.push(`/owner/properties/${id}/maintenance`)}>
                         <Wrench className="mr-2 h-4 w-4" /> Maintenance
                     </Button>
-                    <Button className="bg-amber-500 hover:bg-amber-600 text-white shadow-md shadow-amber-500/20" onClick={() => router.push(`/owner/properties/${id}/units/create`)}>
+                    <Button className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-md" onClick={() => router.push(`/owner/properties/${id}/units/create`)}>
                         <Plus className="mr-2 h-4 w-4" /> Add Unit
                     </Button>
                 </div>
@@ -97,25 +97,25 @@ export default function PropertyDetailsPage() {
             {/* Top Banner Area */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Main Visual (Map or Photos) */}
-                <GlassCard className="lg:col-span-2 p-0 overflow-hidden relative group h-[400px] border-none shadow-xl">
+                <GlassCard className="lg:col-span-2 p-0 overflow-hidden relative group h-[400px] border-none shadow-xl bg-slate-900">
                     <div className="absolute top-4 right-4 z-20 flex gap-2 bg-white/80 backdrop-blur-md p-1 rounded-lg border border-white/20 shadow-sm">
                         {hasPhotos && (
                             <button
                                 onClick={() => setActiveTab('photos')}
-                                className={`p-2 rounded-md transition-all ${activeTab === 'photos' ? 'bg-amber-500 text-white shadow-sm' : 'text-slate-500 hover:text-foreground'}`}
+                                className={`p-2 rounded-md transition-all ${activeTab === 'photos' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-slate-500 hover:text-foreground'}`}
                             >
                                 <ImageIcon className="h-4 w-4" />
                             </button>
                         )}
                         <button
                             onClick={() => setActiveTab('map')}
-                            className={`p-2 rounded-md transition-all ${activeTab === 'map' ? 'bg-amber-500 text-white shadow-sm' : 'text-slate-500 hover:text-foreground'}`}
+                            className={`p-2 rounded-md transition-all ${activeTab === 'map' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-slate-500 hover:text-foreground'}`}
                         >
                             <MapPin className="h-4 w-4" />
                         </button>
                     </div>
 
-                    <div className="w-full h-full bg-slate-100 relative">
+                    <div className="w-full h-full relative">
                         {activeTab === 'map' ? (
                             isLoaded && property.location_lat ? (
                                 <GoogleMap
@@ -127,7 +127,7 @@ export default function PropertyDetailsPage() {
                                     <Marker position={mapCenter} />
                                 </GoogleMap>
                             ) : (
-                                <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-slate-50">
+                                <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-slate-100">
                                     <MapPin className="h-8 w-8 mb-2" />
                                     <span className="block">No Map Data</span>
                                 </div>
@@ -148,7 +148,7 @@ export default function PropertyDetailsPage() {
                                     />
                                 </AnimatePresence>
                                 {/* Gradient Overlay */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
 
                                 {/* Controls */}
                                 {property.images!.length > 1 && (
@@ -171,10 +171,17 @@ export default function PropertyDetailsPage() {
                         )}
 
                         {/* Title Overlay (Only on Photos/Map card) */}
-                        <div className="absolute bottom-0 left-0 right-0 p-6 pointer-events-none z-10">
-                            <h1 className="text-3xl font-bold text-white mb-1 drop-shadow-md">{property.name}</h1>
-                            <p className="text-amber-100 flex items-center text-sm drop-shadow-md font-medium">
-                                <MapPin className="h-3 w-3 mr-1 text-amber-300" /> {property.address}
+                        <div className="absolute bottom-0 left-0 right-0 p-6 pointer-events-none z-10 bg-gradient-to-t from-black/80 to-transparent">
+                            <h1 className="text-4xl font-bold text-white mb-2 drop-shadow-md">{property.name}</h1>
+                            <div className="flex flex-wrap gap-2 mb-2">
+                                {property.highlights && property.highlights.map((h: string, i: number) => (
+                                    <span key={i} className="px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-semibold">
+                                        {h}
+                                    </span>
+                                ))}
+                            </div>
+                            <p className="text-slate-200 flex items-center text-sm drop-shadow-md font-medium">
+                                <MapPin className="h-3 w-3 mr-1 text-primary" /> {property.address}
                             </p>
                         </div>
                     </div>
@@ -185,17 +192,17 @@ export default function PropertyDetailsPage() {
                     <GlassCard className="p-6 flex-1 bg-white border-border shadow-md">
                         <h3 className="text-lg font-semibold text-foreground mb-4">Overview</h3>
                         <div className="grid grid-cols-2 gap-4 mb-6">
-                            <div className="p-3 bg-amber-50 rounded-xl border border-amber-100">
-                                <span className="text-xs text-amber-700/70 block mb-1 uppercase tracking-wider font-semibold">Type</span>
-                                <span className="text-amber-900 font-bold flex items-center truncate">
-                                    <Building className="h-4 w-4 mr-2 text-amber-600" />
+                            <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                <span className="text-xs text-muted-foreground block mb-1 uppercase tracking-wider font-semibold">Type</span>
+                                <span className="text-foreground font-bold flex items-center truncate">
+                                    <Building className="h-4 w-4 mr-2 text-primary" />
                                     {property.property_type || "N/A"}
                                 </span>
                             </div>
-                            <div className="p-3 bg-amber-50 rounded-xl border border-amber-100">
-                                <span className="text-xs text-amber-700/70 block mb-1 uppercase tracking-wider font-semibold">Total Units</span>
-                                <span className="text-amber-900 font-bold flex items-center">
-                                    <Home className="h-4 w-4 mr-2 text-amber-600" />
+                            <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                <span className="text-xs text-muted-foreground block mb-1 uppercase tracking-wider font-semibold">Total Units</span>
+                                <span className="text-foreground font-bold flex items-center">
+                                    <Home className="h-4 w-4 mr-2 text-primary" />
                                     {property.units_count}
                                 </span>
                             </div>
@@ -207,6 +214,24 @@ export default function PropertyDetailsPage() {
                             </p>
                         </div>
                     </GlassCard>
+
+                    {/* Nearby Places Mini Card */}
+                    {property.nearby_places && property.nearby_places.length > 0 && (
+                        <GlassCard className="p-6 bg-slate-900 border-none text-white shadow-lg relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
+                            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                                <MapPin className="h-4 w-4 text-primary" /> What's Nearby
+                            </h3>
+                            <div className="space-y-3 relative z-10">
+                                {property.nearby_places.slice(0, 3).map((place: any, i: number) => (
+                                    <div key={i} className="flex justify-between items-center text-sm">
+                                        <span className="text-slate-200">{place.name}</span>
+                                        <span className="font-mono text-primary text-xs">{place.distance}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </GlassCard>
+                    )}
                 </div>
             </div>
 
@@ -219,7 +244,7 @@ export default function PropertyDetailsPage() {
                         {property.amenities && property.amenities.length > 0 ? (
                             <div className="flex flex-wrap gap-2">
                                 {property.amenities.map(amenity => (
-                                    <span key={amenity} className="px-2 py-1 bg-slate-100 text-slate-700 border border-slate-200 rounded text-xs font-medium">
+                                    <span key={amenity} className="px-2 py-1 bg-slate-50 text-foreground border border-slate-200 rounded text-xs font-medium">
                                         {amenity}
                                     </span>
                                 ))}
@@ -229,6 +254,21 @@ export default function PropertyDetailsPage() {
                         )}
                     </GlassCard>
 
+                    {/* House Rules */}
+                    {property.house_rules && property.house_rules.length > 0 && (
+                        <GlassCard className="p-6 bg-white border-border shadow-sm">
+                            <h3 className="text-lg font-semibold text-foreground mb-4">House Rules</h3>
+                            <ul className="space-y-2">
+                                {property.house_rules.map((rule: string, i: number) => (
+                                    <li key={i} className="text-sm text-foreground flex items-start gap-2">
+                                        <div className="h-1.5 w-1.5 rounded-full bg-slate-300 mt-1.5 flex-shrink-0" />
+                                        {rule}
+                                    </li>
+                                ))}
+                            </ul>
+                        </GlassCard>
+                    )}
+
                     <GlassCard className="p-6 bg-white border-border shadow-sm">
                         <h3 className="text-lg font-semibold text-foreground mb-4">Documents</h3>
                         {property.documents && property.documents.length > 0 ? (
@@ -236,10 +276,10 @@ export default function PropertyDetailsPage() {
                                 {property.documents.map((doc, i) => (
                                     <a key={i} href={doc.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-3 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-colors group">
                                         <div className="flex items-center gap-3 overflow-hidden">
-                                            <FileText className="h-4 w-4 text-amber-500 flex-shrink-0" />
-                                            <span className="text-sm text-foreground truncate group-hover:text-amber-700">{doc.name}</span>
+                                            <FileText className="h-4 w-4 text-primary flex-shrink-0" />
+                                            <span className="text-sm text-foreground truncate group-hover:text-primary">{doc.name}</span>
                                         </div>
-                                        <Download className="h-3 w-3 text-muted-foreground group-hover:text-amber-600" />
+                                        <Download className="h-3 w-3 text-muted-foreground group-hover:text-primary" />
                                     </a>
                                 ))}
                             </div>
@@ -253,7 +293,7 @@ export default function PropertyDetailsPage() {
                 <div className="lg:col-span-3">
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-2xl font-bold text-foreground">Units</h2>
-                        <span className="px-3 py-1 bg-slate-100 rounded-full text-xs text-slate-500 border border-slate-200 font-medium">{property.units ? property.units.length : 0} Total</span>
+                        <span className="px-3 py-1 bg-slate-100 rounded-full text-xs text-muted-foreground border border-slate-200 font-medium">{property.units ? property.units.length : 0} Total</span>
                     </div>
 
                     {property.units && property.units.length > 0 ? (
@@ -265,14 +305,14 @@ export default function PropertyDetailsPage() {
                                     whileInView={{ opacity: 1, y: 0 }}
                                     viewport={{ once: true }}
                                 >
-                                    <GlassCard className="p-4 bg-white border-border shadow-sm hover:shadow-md hover:border-amber-300 transition-all group cursor-pointer relative overflow-hidden">
+                                    <GlassCard className="p-4 bg-white border-border shadow-sm hover:shadow-md hover:border-primary/50 transition-all group cursor-pointer relative overflow-hidden">
                                         <div className="flex justify-between items-start mb-3">
-                                            <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 font-bold text-lg">
+                                            <div className="h-10 w-10 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-foreground font-bold text-lg group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                                                 {unit.unit_number}
                                             </div>
-                                            <span className={`px-2 py-1 rounded-full text-xs border font-medium ${unit.status === 'OCCUPIED' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' :
-                                                unit.status === 'VACANT' ? 'bg-blue-50 text-blue-600 border-blue-200' :
-                                                    'bg-slate-50 text-slate-500 border-slate-200'
+                                            <span className={`px-2 py-1 rounded-full text-xs border font-medium ${unit.status === 'OCCUPIED' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                                unit.status === 'VACANT' ? 'bg-red-50 text-red-700 border-red-200' :
+                                                    'bg-slate-50 text-slate-600 border-slate-200'
                                                 }`}>
                                                 {unit.status}
                                             </span>
@@ -302,7 +342,7 @@ export default function PropertyDetailsPage() {
                     ) : (
                         <div className="p-12 text-center border border-dashed border-border rounded-2xl bg-slate-50">
                             <p className="text-muted-foreground mb-4">No units added yet.</p>
-                            <Button variant="outline" onClick={() => router.push(`/owner/properties/${id}/units/create`)} className="border-amber-500 text-amber-600 hover:bg-amber-50">
+                            <Button variant="outline" onClick={() => router.push(`/owner/properties/${id}/units/create`)} className="border-primary text-primary hover:bg-primary/5">
                                 Create First Unit
                             </Button>
                         </div>
