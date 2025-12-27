@@ -5,6 +5,7 @@ import enum
 
 class PaymentType(str, enum.Enum):
     RENT = "RENT"
+    LEASE = "LEASE"  # Lump sum payment
     ADVANCE = "ADVANCE"
     MAINTENANCE = "MAINTENANCE"
     TAX = "TAX"

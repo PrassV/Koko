@@ -1,30 +1,42 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.database import get_db
-from app.database import get_db
 from app.dependencies import get_current_user, require_role
-from app.models import Tenancy, Unit, User
-from pydantic import BaseModel
+from app.models import Tenancy, Unit, User, Payment
+from pydantic import BaseModel, model_validator
 from datetime import date
-from typing import Optional
+from typing import Optional, Literal
 
 router = APIRouter(prefix="/tenancy", tags=["Tenancy"])
 
 class TenancyCreate(BaseModel):
     unit_id: int
-    tenant_email: Optional[str] = None # Optional for offline
-    tenant_name: Optional[str] = None # Required if offline
+    tenant_email: Optional[str] = None
+    tenant_name: Optional[str] = None
     tenant_phone: Optional[str] = None
     start_date: date
     end_date: Optional[date] = None
-    rent_amount: float
     advance_amount: Optional[float] = 0
-
-@router.post("/", status_code=status.HTTP_201_CREATED)
-from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
-
-# ...
+    
+    # Payment Structure
+    payment_structure: Literal["LEASE", "RENT"] = "RENT"
+    lease_amount: Optional[float] = None  # Required if LEASE
+    rent_amount: Optional[float] = None   # Required if RENT
+    
+    @model_validator(mode='after')
+    def validate_payment_amounts(self):
+        if self.payment_structure == "LEASE":
+            if not self.lease_amount:
+                raise ValueError("lease_amount is required for LEASE payment structure")
+            if self.rent_amount:
+                raise ValueError("rent_amount should not be set for LEASE payment structure")
+        elif self.payment_structure == "RENT":
+            if not self.rent_amount:
+                raise ValueError("rent_amount is required for RENT payment structure")
+            if self.lease_amount:
+                raise ValueError("lease_amount should not be set for RENT payment structure")
+        return self
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_tenancy(
@@ -33,7 +45,6 @@ async def create_tenancy(
     user: User = Depends(require_role("OWNER")),
     db: AsyncSession = Depends(get_db)
 ):
-        
     # Check unit ownership
     unit_res = await db.execute(select(Unit).where(Unit.id == data.unit_id))
     unit = unit_res.scalars().first()
@@ -51,7 +62,7 @@ async def create_tenancy(
     
     # If no tenant found by email, check if we have name for offline
     if not tenant_id and not data.tenant_name:
-         raise HTTPException(status_code=400, detail="Must provide Tenant Email (for registered user) or Tenant Name (for offline)")
+        raise HTTPException(status_code=400, detail="Must provide Tenant Email (for registered user) or Tenant Name (for offline)")
     
     new_tenancy = Tenancy(
         unit_id=data.unit_id,
@@ -61,6 +72,8 @@ async def create_tenancy(
         tenant_phone=data.tenant_phone,
         start_date=data.start_date,
         end_date=data.end_date,
+        payment_structure=data.payment_structure,
+        lease_amount=data.lease_amount,
         rent_amount=data.rent_amount,
         advance_amount=data.advance_amount
     )
@@ -71,6 +84,19 @@ async def create_tenancy(
     
     await db.commit()
     await db.refresh(new_tenancy)
+    
+    # For LEASE, create immediate Payment record
+    if data.payment_structure == "LEASE" and data.lease_amount:
+        lease_payment = Payment(
+            tenancy_id=new_tenancy.id,
+            unit_id=data.unit_id,
+            amount=data.lease_amount,
+            payment_type="LEASE",
+            payment_date=date.today(),
+            status="PAID"
+        )
+        db.add(lease_payment)
+        await db.commit()
     
     # Send Invite Email in Background
     if data.tenant_email:
@@ -84,6 +110,7 @@ async def create_tenancy(
         )
 
     return new_tenancy
+
 
 class VacationNotice(BaseModel):
     notice_date: date
