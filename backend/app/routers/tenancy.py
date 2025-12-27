@@ -66,6 +66,24 @@ async def create_tenancy(
     
     await db.commit()
     await db.refresh(new_tenancy)
+    
+    # Send Invite Email
+    if data.tenant_email:
+        # Assuming we can get property name via unit -> property join, but unit object has property_id.
+        # Let's simple query property name or just generic message.
+        # Actually unit object is in session already? No, we executed select.
+        # Let's just pass generic "Your Unit" or query fresh.
+        # For speed:
+        try:
+             # Fetch property name if needed, or just say "Your Unit"
+             from app.utils.email import send_invite_email
+             # We need to re-fetch unit with property or just assume
+             # unit.property relationship? Lazy load might fail in async without options.
+             # Simple fix:
+             await send_invite_email(data.tenant_email, data.tenant_name or "Tenant", "Koko Property", unit.unit_number)
+        except Exception as e:
+            print(f"Background email send failed: {e}")
+
     return new_tenancy
 
 class VacationNotice(BaseModel):

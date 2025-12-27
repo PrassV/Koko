@@ -27,4 +27,19 @@ class MaintenanceRequest(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     unit = relationship("Unit", back_populates="maintenance_requests")
-    tenant = relationship("User", back_populates="maintenance_requests")
+    tenant = relationship("User", foreign_keys=[tenant_id], back_populates="maintenance_requests_as_tenant")
+    reported_by = relationship("User", foreign_keys=[reported_by_id], back_populates="maintenance_requests_reported")
+    comments = relationship("MaintenanceComment", back_populates="request", cascade="all, delete-orphan")
+
+class MaintenanceComment(Base):
+    __tablename__ = "maintenance_comments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    request_id = Column(Integer, ForeignKey("maintenance_requests.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    
+    content = Column(Text, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    request = relationship("MaintenanceRequest", back_populates="comments")
+    user = relationship("User") # To know who commented

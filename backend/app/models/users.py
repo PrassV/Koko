@@ -21,4 +21,6 @@ class User(Base):
     # Relationships
     properties = relationship("Property", back_populates="owner")
     tenancies = relationship("Tenancy", back_populates="tenant")
-    maintenance_requests = relationship("MaintenanceRequest", back_populates="tenant")
+
+    maintenance_requests_as_tenant = relationship("MaintenanceRequest", foreign_keys="[MaintenanceRequest.tenant_id]", back_populates="tenant")
+    maintenance_requests_reported = relationship("MaintenanceRequest", foreign_keys="[MaintenanceRequest.reported_by_id]", back_populates="reported_by")
