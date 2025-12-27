@@ -59,24 +59,27 @@
 /* Base Variables */
 @layer base {
   :root {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    /* Light Mode Variables */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
     --primary: 45 93% 47%;
+    /* Gold */
     --primary-foreground: 26 83% 14%;
-    --secondary: 45 30% 15%;
-    --secondary-foreground: 45 40% 98%;
-    --muted: 45 30% 15%;
-    --muted-foreground: 45 20% 65%;
-    --accent: 45 30% 15%;
-    --accent-foreground: 45 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 45 40% 98%;
-    --border: 45 30% 15%;
-    --input: 45 30% 15%;
+    --secondary: 45 30% 96%;
+    /* Light Gold Tint */
+    --secondary-foreground: 45 40% 15%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 45 30% 96%;
+    --accent-foreground: 45 40% 15%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
     --ring: 45 93% 47%;
     --radius: 0.75rem;
   }
@@ -115,12 +118,11 @@
 
 /* Utilities */
 @utility glass-panel {
-  background-color: rgb(255 255 255 / 0.05);
-  /* bg-white/5 */
+  background-color: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(12px);
   border-width: 1px;
-  border-color: rgb(255 255 255 / 0.1);
-  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  border-color: rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
 
 @utility text-gradient {

@@ -67,8 +67,8 @@ export default function PropertyDetailsPage() {
         if (id) fetchProperty();
     }, [id]);
 
-    if (loading) return <div className="p-10 text-white flex items-center justify-center min-h-[50vh]"><div className="animate-spin h-8 w-8 border-4 border-amber-500 rounded-full border-t-transparent"></div></div>;
-    if (!property) return <div className="p-10 text-white">Property not found.</div>;
+    if (loading) return <div className="p-10 flex items-center justify-center min-h-[50vh]"><div className="animate-spin h-8 w-8 border-4 border-amber-500 rounded-full border-t-transparent"></div></div>;
+    if (!property) return <div className="p-10 text-foreground">Property not found.</div>;
 
     const mapCenter = {
         lat: property.location_lat || 40.7128,
@@ -81,14 +81,14 @@ export default function PropertyDetailsPage() {
         <div className="space-y-6 max-w-7xl mx-auto pb-12">
             {/* Header / Back */}
             <div className="flex items-center justify-between">
-                <Button variant="ghost" className="text-slate-400 hover:text-white pl-0" onClick={() => router.back()}>
+                <Button variant="ghost" className="text-muted-foreground hover:text-foreground pl-0" onClick={() => router.back()}>
                     <ArrowLeft className="mr-2 h-4 w-4" /> Back to Properties
                 </Button>
                 <div className="flex gap-2">
-                    <Button variant="outline" className="border-white/10 text-white hover:bg-white/5" onClick={() => router.push(`/owner/properties/${id}/maintenance`)}>
+                    <Button variant="outline" className="border-border text-foreground hover:bg-slate-50" onClick={() => router.push(`/owner/properties/${id}/maintenance`)}>
                         <Wrench className="mr-2 h-4 w-4" /> Maintenance
                     </Button>
-                    <Button className="bg-amber-600 hover:bg-amber-700 text-black" onClick={() => router.push(`/owner/properties/${id}/units/create`)}>
+                    <Button className="bg-amber-500 hover:bg-amber-600 text-white shadow-md shadow-amber-500/20" onClick={() => router.push(`/owner/properties/${id}/units/create`)}>
                         <Plus className="mr-2 h-4 w-4" /> Add Unit
                     </Button>
                 </div>
@@ -97,25 +97,25 @@ export default function PropertyDetailsPage() {
             {/* Top Banner Area */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Main Visual (Map or Photos) */}
-                <GlassCard className="lg:col-span-2 p-0 overflow-hidden relative group h-[400px]">
-                    <div className="absolute top-4 right-4 z-20 flex gap-2 bg-black/50 backdrop-blur-md p-1 rounded-lg border border-white/10">
+                <GlassCard className="lg:col-span-2 p-0 overflow-hidden relative group h-[400px] border-none shadow-xl">
+                    <div className="absolute top-4 right-4 z-20 flex gap-2 bg-white/80 backdrop-blur-md p-1 rounded-lg border border-white/20 shadow-sm">
                         {hasPhotos && (
                             <button
                                 onClick={() => setActiveTab('photos')}
-                                className={`p-2 rounded-md transition-all ${activeTab === 'photos' ? 'bg-amber-500 text-black' : 'text-slate-400 hover:text-white'}`}
+                                className={`p-2 rounded-md transition-all ${activeTab === 'photos' ? 'bg-amber-500 text-white shadow-sm' : 'text-slate-500 hover:text-foreground'}`}
                             >
                                 <ImageIcon className="h-4 w-4" />
                             </button>
                         )}
                         <button
                             onClick={() => setActiveTab('map')}
-                            className={`p-2 rounded-md transition-all ${activeTab === 'map' ? 'bg-amber-500 text-black' : 'text-slate-400 hover:text-white'}`}
+                            className={`p-2 rounded-md transition-all ${activeTab === 'map' ? 'bg-amber-500 text-white shadow-sm' : 'text-slate-500 hover:text-foreground'}`}
                         >
                             <MapPin className="h-4 w-4" />
                         </button>
                     </div>
 
-                    <div className="w-full h-full bg-slate-800 relative">
+                    <div className="w-full h-full bg-slate-100 relative">
                         {activeTab === 'map' ? (
                             isLoaded && property.location_lat ? (
                                 <GoogleMap
@@ -127,14 +127,14 @@ export default function PropertyDetailsPage() {
                                     <Marker position={mapCenter} />
                                 </GoogleMap>
                             ) : (
-                                <div className="w-full h-full flex items-center justify-center text-slate-500 bg-white/5">
+                                <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-slate-50">
                                     <MapPin className="h-8 w-8 mb-2" />
                                     <span className="block">No Map Data</span>
                                 </div>
                             )
                         ) : (
                             // Photo Carousel
-                            <div className="w-full h-full relative bg-black">
+                            <div className="w-full h-full relative bg-slate-900">
                                 <AnimatePresence mode="wait">
                                     <motion.img
                                         key={currentPhotoIndex}
@@ -148,20 +148,20 @@ export default function PropertyDetailsPage() {
                                     />
                                 </AnimatePresence>
                                 {/* Gradient Overlay */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
 
                                 {/* Controls */}
                                 {property.images!.length > 1 && (
                                     <>
                                         <button
                                             onClick={(e) => { e.stopPropagation(); setCurrentPhotoIndex(prev => (prev - 1 + property.images!.length) % property.images!.length); }}
-                                            className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-amber-500/80 hover:text-black transition-all"
+                                            className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/20 text-white hover:bg-white/40 backdrop-blur-sm transition-all"
                                         >
                                             <ChevronLeft className="h-5 w-5" />
                                         </button>
                                         <button
                                             onClick={(e) => { e.stopPropagation(); setCurrentPhotoIndex(prev => (prev + 1) % property.images!.length); }}
-                                            className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-amber-500/80 hover:text-black transition-all"
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/20 text-white hover:bg-white/40 backdrop-blur-sm transition-all"
                                         >
                                             <ChevronRight className="h-5 w-5" />
                                         </button>
@@ -170,11 +170,11 @@ export default function PropertyDetailsPage() {
                             </div>
                         )}
 
-                        {/* Title Overlay */}
-                        <div className="absolute bottom-0 left-0 right-0 p-6 pointer-events-none">
-                            <h1 className="text-3xl font-bold text-white mb-1 drop-shadow-lg">{property.name}</h1>
-                            <p className="text-slate-200 flex items-center text-sm drop-shadow-md">
-                                <MapPin className="h-3 w-3 mr-1 text-amber-400" /> {property.address}
+                        {/* Title Overlay (Only on Photos/Map card) */}
+                        <div className="absolute bottom-0 left-0 right-0 p-6 pointer-events-none z-10">
+                            <h1 className="text-3xl font-bold text-white mb-1 drop-shadow-md">{property.name}</h1>
+                            <p className="text-amber-100 flex items-center text-sm drop-shadow-md font-medium">
+                                <MapPin className="h-3 w-3 mr-1 text-amber-300" /> {property.address}
                             </p>
                         </div>
                     </div>
@@ -182,27 +182,27 @@ export default function PropertyDetailsPage() {
 
                 {/* Stats & Info */}
                 <div className="space-y-6 flex flex-col">
-                    <GlassCard className="p-6 flex-1">
-                        <h3 className="text-lg font-semibold text-white mb-4">Overview</h3>
+                    <GlassCard className="p-6 flex-1 bg-white border-border shadow-md">
+                        <h3 className="text-lg font-semibold text-foreground mb-4">Overview</h3>
                         <div className="grid grid-cols-2 gap-4 mb-6">
-                            <div className="p-3 bg-white/5 rounded-xl border border-white/5">
-                                <span className="text-xs text-slate-400 block mb-1">Type</span>
-                                <span className="text-white font-medium flex items-center truncate">
-                                    <Building className="h-4 w-4 mr-2 text-amber-400" />
+                            <div className="p-3 bg-amber-50 rounded-xl border border-amber-100">
+                                <span className="text-xs text-amber-700/70 block mb-1 uppercase tracking-wider font-semibold">Type</span>
+                                <span className="text-amber-900 font-bold flex items-center truncate">
+                                    <Building className="h-4 w-4 mr-2 text-amber-600" />
                                     {property.property_type || "N/A"}
                                 </span>
                             </div>
-                            <div className="p-3 bg-white/5 rounded-xl border border-white/5">
-                                <span className="text-xs text-slate-400 block mb-1">Total Units</span>
-                                <span className="text-white font-medium flex items-center">
-                                    <Home className="h-4 w-4 mr-2 text-yellow-400" />
+                            <div className="p-3 bg-amber-50 rounded-xl border border-amber-100">
+                                <span className="text-xs text-amber-700/70 block mb-1 uppercase tracking-wider font-semibold">Total Units</span>
+                                <span className="text-amber-900 font-bold flex items-center">
+                                    <Home className="h-4 w-4 mr-2 text-amber-600" />
                                     {property.units_count}
                                 </span>
                             </div>
                         </div>
                         <div>
-                            <span className="text-xs text-slate-400 block mb-2">Description</span>
-                            <p className="text-slate-300 text-sm leading-relaxed line-clamp-4">
+                            <span className="text-xs text-muted-foreground block mb-2 uppercase tracking-tight font-semibold">Description</span>
+                            <p className="text-foreground text-sm leading-relaxed line-clamp-6">
                                 {property.description || "No description provided."}
                             </p>
                         </div>
@@ -214,37 +214,37 @@ export default function PropertyDetailsPage() {
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                 {/* Left Sidebar: Amenities & Docs */}
                 <div className="lg:col-span-1 space-y-6">
-                    <GlassCard className="p-6">
-                        <h3 className="text-lg font-semibold text-white mb-4">Amenities</h3>
+                    <GlassCard className="p-6 bg-white border-border shadow-sm">
+                        <h3 className="text-lg font-semibold text-foreground mb-4">Amenities</h3>
                         {property.amenities && property.amenities.length > 0 ? (
                             <div className="flex flex-wrap gap-2">
                                 {property.amenities.map(amenity => (
-                                    <span key={amenity} className="px-2 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded text-xs font-medium">
+                                    <span key={amenity} className="px-2 py-1 bg-slate-100 text-slate-700 border border-slate-200 rounded text-xs font-medium">
                                         {amenity}
                                     </span>
                                 ))}
                             </div>
                         ) : (
-                            <p className="text-slate-500 text-sm italic">No amenities listed.</p>
+                            <p className="text-muted-foreground text-sm italic">No amenities listed.</p>
                         )}
                     </GlassCard>
 
-                    <GlassCard className="p-6">
-                        <h3 className="text-lg font-semibold text-white mb-4">Documents</h3>
+                    <GlassCard className="p-6 bg-white border-border shadow-sm">
+                        <h3 className="text-lg font-semibold text-foreground mb-4">Documents</h3>
                         {property.documents && property.documents.length > 0 ? (
                             <div className="space-y-2">
                                 {property.documents.map((doc, i) => (
-                                    <a key={i} href={doc.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-3 bg-white/5 hover:bg-white/10 rounded-lg border border-white/5 transition-colors group">
+                                    <a key={i} href={doc.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-3 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-colors group">
                                         <div className="flex items-center gap-3 overflow-hidden">
-                                            <FileText className="h-4 w-4 text-emerald-400 flex-shrink-0" />
-                                            <span className="text-sm text-slate-300 truncate group-hover:text-white">{doc.name}</span>
+                                            <FileText className="h-4 w-4 text-amber-500 flex-shrink-0" />
+                                            <span className="text-sm text-foreground truncate group-hover:text-amber-700">{doc.name}</span>
                                         </div>
-                                        <Download className="h-3 w-3 text-slate-500 group-hover:text-white" />
+                                        <Download className="h-3 w-3 text-muted-foreground group-hover:text-amber-600" />
                                     </a>
                                 ))}
                             </div>
                         ) : (
-                            <p className="text-slate-500 text-sm italic">No documents uploaded.</p>
+                            <p className="text-muted-foreground text-sm italic">No documents uploaded.</p>
                         )}
                     </GlassCard>
                 </div>
@@ -252,8 +252,8 @@ export default function PropertyDetailsPage() {
                 {/* Right Area: Units */}
                 <div className="lg:col-span-3">
                     <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-2xl font-bold text-white">Units</h2>
-                        <span className="px-3 py-1 bg-white/5 rounded-full text-xs text-slate-400 border border-white/10">{property.units ? property.units.length : 0} Total</span>
+                        <h2 className="text-2xl font-bold text-foreground">Units</h2>
+                        <span className="px-3 py-1 bg-slate-100 rounded-full text-xs text-slate-500 border border-slate-200 font-medium">{property.units ? property.units.length : 0} Total</span>
                     </div>
 
                     {property.units && property.units.length > 0 ? (
@@ -265,14 +265,14 @@ export default function PropertyDetailsPage() {
                                     whileInView={{ opacity: 1, y: 0 }}
                                     viewport={{ once: true }}
                                 >
-                                    <GlassCard className="p-4 hover:border-amber-500/30 transition-colors group cursor-pointer relative overflow-hidden">
+                                    <GlassCard className="p-4 bg-white border-border shadow-sm hover:shadow-md hover:border-amber-300 transition-all group cursor-pointer relative overflow-hidden">
                                         <div className="flex justify-between items-start mb-3">
-                                            <div className="h-10 w-10 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400 font-bold text-lg">
+                                            <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 font-bold text-lg">
                                                 {unit.unit_number}
                                             </div>
-                                            <span className={`px-2 py-1 rounded-full text-xs border font-medium ${unit.status === 'OCCUPIED' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                                                    unit.status === 'VACANT' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
-                                                        'bg-slate-500/10 text-slate-400 border-slate-500/20'
+                                            <span className={`px-2 py-1 rounded-full text-xs border font-medium ${unit.status === 'OCCUPIED' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' :
+                                                unit.status === 'VACANT' ? 'bg-blue-50 text-blue-600 border-blue-200' :
+                                                    'bg-slate-50 text-slate-500 border-slate-200'
                                                 }`}>
                                                 {unit.status}
                                             </span>
@@ -280,18 +280,18 @@ export default function PropertyDetailsPage() {
 
                                         <div className="space-y-2 text-sm relative z-10">
                                             {unit.size_sqft && (
-                                                <div className="flex items-center text-slate-400">
-                                                    <Ruler className="h-3 w-3 mr-2 text-slate-500" /> {unit.size_sqft} sq ft
+                                                <div className="flex items-center text-muted-foreground">
+                                                    <Ruler className="h-3 w-3 mr-2 text-slate-400" /> {unit.size_sqft} sq ft
                                                 </div>
                                             )}
                                             {unit.facing && (
-                                                <div className="flex items-center text-slate-400">
-                                                    <Compass className="h-3 w-3 mr-2 text-slate-500" /> {unit.facing} Facing
+                                                <div className="flex items-center text-muted-foreground">
+                                                    <Compass className="h-3 w-3 mr-2 text-slate-400" /> {unit.facing} Facing
                                                 </div>
                                             )}
                                             {unit.construction_date && (
-                                                <div className="flex items-center text-slate-400">
-                                                    <Calendar className="h-3 w-3 mr-2 text-slate-500" /> Built {format(new Date(unit.construction_date), 'yyyy')}
+                                                <div className="flex items-center text-muted-foreground">
+                                                    <Calendar className="h-3 w-3 mr-2 text-slate-400" /> Built {format(new Date(unit.construction_date), 'yyyy')}
                                                 </div>
                                             )}
                                         </div>
@@ -300,9 +300,9 @@ export default function PropertyDetailsPage() {
                             ))}
                         </div>
                     ) : (
-                        <div className="p-12 text-center border border-dashed border-white/10 rounded-2xl bg-white/5">
-                            <p className="text-slate-500 mb-4">No units added yet.</p>
-                            <Button variant="outline" onClick={() => router.push(`/owner/properties/${id}/units/create`)} className="border-amber-500/50 text-amber-400 hover:bg-amber-500/10">
+                        <div className="p-12 text-center border border-dashed border-border rounded-2xl bg-slate-50">
+                            <p className="text-muted-foreground mb-4">No units added yet.</p>
+                            <Button variant="outline" onClick={() => router.push(`/owner/properties/${id}/units/create`)} className="border-amber-500 text-amber-600 hover:bg-amber-50">
                                 Create First Unit
                             </Button>
                         </div>

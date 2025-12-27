@@ -37,11 +37,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     };
 
     return (
-        <div className="flex min-h-screen relative text-foreground">
+        <div className="flex min-h-screen relative bg-background text-foreground">
             <AnimatedBackground />
 
             {/* Glass Sidebar */}
-            <aside className="w-64 glass-panel m-4 rounded-2xl flex flex-col z-10 h-[calc(100vh-2rem)] sticky top-4">
+            <aside className="w-64 glass-panel m-4 rounded-2xl flex flex-col z-10 h-[calc(100vh-2rem)] sticky top-4 bg-white/50 backdrop-blur-xl border-white/20 shadow-xl">
                 <div className="p-6 flex items-center gap-3">
                     <img src="/logo.png" alt="Koko Logo" className="h-10 w-10 object-contain" />
                     <div>
@@ -72,7 +72,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                         variant="ghost"
                                         className={`w-full justify-start relative z-10 transition-colors ${isActive
                                             ? "text-primary font-medium"
-                                            : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+                                            : "text-muted-foreground hover:text-foreground hover:bg-black/5"
                                             }`}
                                     >
                                         <item.icon className="mr-3 h-4 w-4" />
@@ -85,8 +85,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </nav>
 
                 <div className="p-4 mt-auto">
-                    <div className="glass-panel p-3 rounded-xl mb-3 flex items-center gap-3 border-none bg-white/5">
-                        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold shadow-lg">
+                    <div className="glass-panel p-3 rounded-xl mb-3 flex items-center gap-3 border-none bg-white/40 shadow-sm">
+                        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-white text-xs font-bold shadow-lg">
                             {profile?.name?.charAt(0) || "U"}
                         </div>
                         <div className="overflow-hidden">
@@ -97,7 +97,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
                     <Button
                         variant="ghost"
-                        className="w-full justify-start text-muted-foreground hover:text-red-400 hover:bg-red-500/10"
+                        className="w-full justify-start text-muted-foreground hover:text-red-500 hover:bg-red-50"
                         onClick={logout}
                     >
                         <LogOut className="mr-2 h-4 w-4" /> Logout
@@ -110,17 +110,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <main className="flex-1 flex flex-col min-h-screen overflow-hidden z-10 relative">
 
                 {/* Header */}
-                <header className="h-16 border-b border-white/5 bg-white/5 backdrop-blur-md px-8 flex items-center justify-between sticky top-0 z-20">
+                <header className="h-16 border-b border-border/40 bg-white/30 backdrop-blur-md px-8 flex items-center justify-between sticky top-0 z-20">
                     <div className="flex items-center gap-4">
-                        <h2 className="text-xl font-semibold text-white capitalize">
+                        <h2 className="text-xl font-semibold text-foreground capitalize">
                             {pathname.split('/').pop()?.replace('-', ' ') || 'Dashboard'}
                         </h2>
                     </div>
                     <div className="flex items-center gap-4">
-                        <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white">
+                        <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground hover:bg-black/5">
                             <Settings className="h-5 w-5" />
                         </Button>
-                        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold border border-white/10 ring-2 ring-white/5">
+                        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-white text-xs font-bold border border-white/20 ring-2 ring-amber-100 shadow-md">
                             {profile?.name?.charAt(0) || "U"}
                         </div>
                     </div>
@@ -132,12 +132,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </div>
 
                 {/* Footer */}
-                <footer className="h-12 border-t border-white/5 bg-black/20 px-8 flex items-center justify-between text-xs text-slate-500">
+                <footer className="h-12 border-t border-border/40 bg-white/20 px-8 flex items-center justify-between text-xs text-muted-foreground">
                     <p>© 2025 Propo Inc. All rights reserved.</p>
                     <div className="flex gap-4">
-                        <span className="hover:text-white cursor-pointer">Privacy</span>
-                        <span className="hover:text-white cursor-pointer">Terms</span>
-                        <span className="hover:text-white cursor-pointer">Support</span>
+                        <span className="hover:text-primary cursor-pointer transition-colors">Privacy</span>
+                        <span className="hover:text-primary cursor-pointer transition-colors">Terms</span>
+                        <span className="hover:text-primary cursor-pointer transition-colors">Support</span>
                     </div>
                 </footer>
             </main>

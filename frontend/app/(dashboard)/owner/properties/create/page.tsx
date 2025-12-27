@@ -224,9 +224,8 @@ export default function CreatePropertyWizard() {
     const renderLocation = () => (
         <div className="w-full h-full flex flex-col md:flex-row gap-6">
             <div className="w-full md:w-1/3 space-y-4">
-                <h2 className="text-3xl font-bold text-white mb-4">Where's your place located?</h2>
+                <h2 className="text-3xl font-bold text-foreground mb-4">Where's your place located?</h2>
                 <div className="space-y-3">
-                    <Input className="glass-inputs" placeholder="Property Name (e.g. Sunset Villa)" value={formData.name} onChange={e => updateForm("name", e.target.value)} />
                     <Input className="glass-inputs" placeholder="Address Line 1" value={formData.address_line1} onChange={e => updateForm("address_line1", e.target.value)} />
                     <div className="flex gap-2">
                         <Input className="glass-inputs" placeholder="City" value={formData.city} onChange={e => updateForm("city", e.target.value)} />
@@ -234,20 +233,20 @@ export default function CreatePropertyWizard() {
                     </div>
                     <Input className="glass-inputs" placeholder="Pincode" value={formData.pincode} onChange={e => updateForm("pincode", e.target.value)} />
                 </div>
-                <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-                    <p className="text-amber-200 text-sm flex items-center gap-2">
+                <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                    <p className="text-amber-800 text-sm flex items-center gap-2">
                         <MapPin className="h-4 w-4" />
                         We'll drop a pin here for tenants.
                     </p>
                 </div>
             </div>
-            <div className="flex-1 rounded-2xl overflow-hidden border border-white/10 relative min-h-[400px]">
+            <div className="flex-1 rounded-2xl overflow-hidden border border-border relative min-h-[400px] shadow-md">
                 {isLoaded && (
                     <GoogleMap
                         zoom={mapZoom}
                         center={mapCenter}
                         mapContainerClassName="w-full h-full"
-                        options={{ disableDefaultUI: true, styles: [{ elementType: "geometry", stylers: [{ color: "#242f3e" }] }] }}
+                        options={{ disableDefaultUI: true }}
                         onLoad={map => { mapRef.current = map; }}
                     >
                         <Marker position={mapCenter} />
@@ -486,7 +485,7 @@ export default function CreatePropertyWizard() {
 
             <style jsx global>{`
                 .glass-inputs {
-                    @apply bg-white/5 border-white/10 text-white placeholder:text-slate-600 focus:border-white/30 h-12 rounded-xl transition-all;
+                    @apply bg-white border-input text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring/20 h-12 rounded-xl transition-all shadow-sm;
                 }
             `}</style>
         </div>
