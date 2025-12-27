@@ -16,8 +16,21 @@ origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "https://koko-two-zeta.vercel.app",
-    "https://propo.vercel.app", # Future proofing
+    "https://propo.vercel.app",
 ]
+
+# Add FRONTEND_URL from environment if set
+frontend_url = os.getenv("FRONTEND_URL")
+if frontend_url and frontend_url not in origins:
+    origins.append(frontend_url)
+    
+# Also support comma-separated ALLOWED_ORIGINS
+extra_origins = os.getenv("ALLOWED_ORIGINS", "")
+if extra_origins:
+    for origin in extra_origins.split(","):
+        origin = origin.strip()
+        if origin and origin not in origins:
+            origins.append(origin)
 
 app.add_middleware(
     CORSMiddleware,
